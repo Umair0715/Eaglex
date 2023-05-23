@@ -9,6 +9,8 @@ const path = require('path');
 const connectDB = require('./utils/db');
 const cron = require('node-cron');
 const updateInvestmentProgress = require('./croneJobs/updateInvestProgress');
+const https = require('https');
+const fs = require('fs');
 
 // cron.schedule('*/1 * * * * *', updateInvestmentProgress);
 
@@ -36,5 +38,12 @@ app.use('/api/change-bank' , require('./routes/chnageBankRoutes'));
 
 app.use(require('./middlewares/errorHandler'));
 
+const options = {
+    key: fs.readFileSync('eaglex.key', 'utf8').trim(),
+    cert: fs.readFileSync('eaglex.crt', 'utf8').trim()
+};
+  
+const server = https.createServer(options, app);
+
 const PORT = process.env.PORT || 5500;
-app.listen(PORT , () => console.log(`server is listening on port ${PORT}`))
+server.listen(PORT , () => console.log(`server is listening on port ${PORT}`))
