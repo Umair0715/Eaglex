@@ -10,6 +10,8 @@ const { sendSuccessResponse } = require('../utils/helpers');
 const userFactory = require('./factories/userFactory');
 const uploadImage = require('../utils/uploadImage');
 const handlerFactory = require('./factories/handlerFactory');
+const Offer = require('../models/offerModel');
+const Setting = require('../models/settingsModel')
 
 exports.register = catchAsync(async(req , res , next) => {
     const { phone } = req.body;
@@ -37,6 +39,7 @@ exports.register = catchAsync(async(req , res , next) => {
     const token = signToken({ _id : newUser._id })
     sendCookie(res , token);
     newUser.password = '';
+    newUser.wallet = wallet;
     sendSuccessResponse(res , 201 , {
         message : 'Registered Successfully.' ,
         doc : {...newUser._doc , token }
@@ -110,3 +113,89 @@ exports.deleteUser = handlerFactory.deleteOne(User);
 exports.editUser = handlerFactory.updateOne(User);
 exports.getSingleUser = handlerFactory.getOne(User);
 exports.blockUser = userFactory.block(User);
+
+
+exports.getUserDetails = catchAsync(async (req , res , next) => {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) {
+        return next(new AppError('Invalid id. User not found.' , 400))
+    }
+    // Recursively fetch team members up to three levels deep
+    const levelOneMembers = await getTeamMembers(user, 1 , 3);
+
+    const result = {
+        levelOneMembers,
+        levelTwoMembers: [],
+        levelThreeMembers: []
+    };
+
+    if (levelOneCount > 0) {
+        for (const member of levelOneMembers) {
+            if (member.teamMembers.length > 0) {
+            result.levelTwoMembers.push(...member.teamMembers);
+                for (const nestedMember of member.teamMembers) {
+                    if (nestedMember.teamMembers.length > 0) {
+                        result.levelThreeMembers.push(...nestedMember.teamMembers);
+                    }
+                }
+            }
+        }
+    }
+    result.totalTeamMembers = result.levelOneMembers.length + result.levelTwoMembers.length + result.levelThreeMembers.length;
+    sendSuccessResponse(res , 200 , { doc : result})
+});
+
+async function getTeamMembers(user, currentLevel, maxLevel) {
+    if (currentLevel > maxLevel) {
+        return [];
+    }
+    
+    const teamMembers = await User.find({ referrer: user.referralCode });
+    
+    const nestedTeamMembers = [];
+    for (const member of teamMembers) {
+        const nestedMembers = await getTeamMembers(member , currentLevel + 1 , maxLevel);
+        nestedTeamMembers.push({
+            user: member,
+            teamMembers: nestedMembers,
+        });
+    }
+    return nestedTeamMembers;
+}
+
+exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
+    const levelOneMembers = await User.find({ referrer: req.user.referralCode }).exec();
+    const levelTwoMembers = await User.find({ referrer: { $in: levelOneMembers.map(member => member.referralCode ) } }).exec();
+    const levelThreeMembers = await User.find({ referrer: { $in: levelTwoMembers.map(member => member.referralCode ) } }).exec();
+    const settings = await Setting.findOne({});
+
+    const totalTeamMembers = levelOneMembers.length + levelTwoMembers.length + levelThreeMembers.length;
+
+    // Calculate totalInvestAmount
+    const levelOneInvestAmount = levelOneMembers.reduce((total, member) => total + member.totalInvestAmount, 0);
+    const levelTwoInvestAmount = levelTwoMembers.reduce((total, member) => total + member.totalInvestAmount, 0);
+    const levelThreeInvestAmount = levelThreeMembers.reduce((total, member) => total + member.totalInvestAmount , 0);
+
+    const totalInvestAmount = levelOneInvestAmount + levelTwoInvestAmount + levelThreeInvestAmount;
+
+    sendSuccessResponse(res , 200 , {
+        totalInvestAmount ,
+        totalTeamMembers,
+        levelOneMembers : levelOneMembers.length ,
+        levelTwoMembers : levelTwoMembers.length ,
+        levelThreeMembers : levelThreeMembers.length ,
+        levelOneCommission : settings.levelOneProfit ,
+        levelTwoCommission : settings.levelTwoProfit ,
+        levelThreeCommission : settings.levelThreeProfit ,
+    })
+});
+
+exports.getDashboardDetails = catchAsync(async(req , res , next) => {
+    const user = await User.findOne({ user : req.user._Id })
+    .populate('wallet');
+    const offers = await Offer.find().populate('company').limit(10).sort({ createdAt : -1 })
+    sendSuccessResponse(res , 200 , {
+        user , offers
+    })
+});

@@ -36,6 +36,14 @@ const settingsSchema = new mongoose.Schema({
     levelThreeProfit : {
         type : Number ,
         default : 2.1 
+    } , 
+    govtFee : {
+        type : Number ,
+        default : 3
+    } ,
+    platformFee : {
+        type : Number ,
+        default : 2
     }
 } , { timestamps : true });
 

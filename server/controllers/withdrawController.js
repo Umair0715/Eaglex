@@ -27,13 +27,13 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     if(userWallet.totalBalance < amount) {
         return next(new AppError('You have insufficient balance to withdraw this amount.' , 400))
     }
-    userWallet.totalBalance -= parseInt(amount);
+    userWallet.totalBalance -= Number(amount);
     await userWallet.save();
 
     const admin = await Admin.findOne({ isSuperAdmin : true })
     const adminWallet = await AdminWallet.findOne({ admin : admin._id });
     const settings = await Setting.findOne({});
-    const withdrawFee = (amount/100) * settings.withdrawFee;
+    const withdrawFee = (amount/100) * (settings.govtFee + settings.platformFee);
     adminWallet.totalBalance += withdrawFee;
     await adminWallet.save();
 
@@ -78,6 +78,9 @@ const fetchWithdrawRequests = async (req , res , query) => {
         .limit(pageSize)
         .skip(pageSize * (page - 1))
         .sort({ createdAt : -1 });
+
+        console.log({ docs })
+
         const pages = Math.ceil(docCount/pageSize);
         sendSuccessResponse(res , 200 , {
             docs , page , pages , docCount 

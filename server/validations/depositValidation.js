@@ -1,9 +1,6 @@
 const joi = require('joi');
 
 const depositValidation = joi.object().keys({
-    user : joi.string().required().messages({
-        'any.required' : 'User id is required.'
-    }) ,
     bankName : joi.string().required().messages({
         'any.required' : 'Bank name is required.'
     }) ,

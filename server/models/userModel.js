@@ -48,6 +48,10 @@ const userSchema = new mongoose.Schema({
     referrer : {
         type : String ,
         default : null 
+    } ,
+    totalInvestAmount : {
+        type : Number ,
+        default : null
     }
 
 } , { timestamps : true });

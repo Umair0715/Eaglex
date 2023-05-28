@@ -1,4 +1,4 @@
-const { createInvest, getAllInvestments, getMyInvestments, getSingleUserInvestments , getSingleInvestment } = require('../controllers/investController');
+const { createInvest, getAllInvestments, getMyInvestments, getSingleUserInvestments , getSingleInvestment, getMyProgress, claimInvestProfit } = require('../controllers/investController');
 const { protect } = require('../middlewares/protect');
 const User = require('../models/userModel');
 const Admin = require('../models/adminModel');  
@@ -10,6 +10,8 @@ router.route('/')
 
 router.get('/my' , protect(User) , getMyInvestments)
 router.get('/user/:id' , protect(Admin) , getSingleUserInvestments);
+router.get('/my-progress' , protect(User) , getMyProgress)
+router.get('/claim/:id' , protect(User) , claimInvestProfit)
 
 router.get('/:id' , getSingleInvestment)
 

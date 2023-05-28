@@ -8,9 +8,11 @@ const Offer = require('../models/offerModel');
 const Wallet = require('../models/walletModel');
 const moment = require('moment');
 const createWalletHistory = require('../utils/CreateWalletHistory');
+const User = require('../models/userModel');
 
 exports.createInvest = catchAsync(async(req , res , next) => {
-    const { amount } = req.body;
+    let { amount } = req.body;
+    amount = parseInt(amount);
     const { error } = investValidation.validate(req.body);
     if(error) {
         return next(new AppError(error.details[0].message , 400))
@@ -50,6 +52,10 @@ exports.createInvest = catchAsync(async(req , res , next) => {
         endDate : moment().add(offer.timePeriod , 'days')
     });
 
+    const user = await User.findById(req.user._id);
+    user.totalInvestAmount += amount;
+    user.save();
+
     createWalletHistory(amount , '-' , userWallet._id , req.user._id , `Invested in ${offer.name} offer`)
 
     sendSuccessResponse(res , 200 , {
@@ -68,13 +74,19 @@ const fetchInvests = async (req , res , query) => {
             filter = { status : 'running' }
         }else if (status === 'completed') {
             filter = { status : 'completed' }
+        } else if (status === 'claimed') {
+            filter = { status : 'claimed' }
         }
         const docCount = await Invest.countDocuments({...filter , ...query})
         const docs = await Invest.find({...filter , ...query})
         .populate([
             {
                 path : 'offer' ,
-                select : '-__v'
+                select : '-__v' , 
+                populate : {
+                    path : 'company' ,
+                    select : 'name'
+                }
             } ,
             {
                 path : 'user' ,
@@ -103,4 +115,46 @@ exports.getMyInvestments = catchAsync(async(req , res) => {
     await fetchInvests(req , res , { user : req.user._id });
 });
 
+exports.getMyProgress = catchAsync(async(req , res) => {
+    await fetchInvests(req , res , { user : req.user._id , status : { $ne : 'claimed'} })
+})
+
 exports.getSingleInvestment = hanlderFactory.getOne(Invest , ['user' , 'offer']);
+
+exports.claimInvestProfit = catchAsync(async(req , res , next) => {
+    const { id } = req.params;
+    if(!id) return next(new AppError('Invalid Request. Invest id is required.' , 400));
+    const invest = await Invest.findById(id)
+    .populate([
+        {
+            path : 'offer' ,
+            select : '-__v' , 
+            populate : {
+                path : 'company' ,
+            }
+        } ,
+        {
+            path : 'user' ,
+            select : 'firstName lastName wallet phone isActive'
+        }
+    ]);
+    if(!invest) {
+        return next(new AppError('Invalid id. Document not found.' , 400))
+    }
+    if(invest.status !== 'completed') {
+        return next(new AppError("can't process this request." , 400))
+    }
+    const userWallet = await Wallet.findOne({ user : invest.user._id });
+    const userProfit = parseInt(invest?.amount) + parseInt(invest?.returnProfitAmount);
+    userWallet.totalBalance += userProfit ;
+    await userWallet.save();
+
+    invest.status = 'claimed';
+    invest.profitClaimed = true ;
+    const updatedInvest = await invest.save();
+
+    sendSuccessResponse(res , 200 , {
+        message : 'Profit claimed successfully.' ,
+        doc : updatedInvest
+    })
+})

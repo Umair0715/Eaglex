@@ -20,7 +20,7 @@ exports.createDepositRequest = catchAsync(async(req , res , next) => {
     }
     const { fileName } = uploadImage(proof , imgDirectory);
     req.body.proof = `/${imgDirectory}/` + fileName;
-    const newRequest = await Deposit.create(req.body);
+    const newRequest = await Deposit.create({...req.body , user : req.user._id });
     sendSuccessResponse(res , 201 , {
         message : 'Deposit request created successfully.' ,
         doc : newRequest

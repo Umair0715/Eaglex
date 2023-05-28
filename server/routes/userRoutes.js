@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { register, login, getProfile, updateProfile, updatePassword, logout, getAllUsers, editUser, deleteUser , getSingleUser } = require('../controllers/userController');
+const { register, login, getProfile, updateProfile, updatePassword, logout, getAllUsers, editUser, deleteUser , getSingleUser, getDashboardDetails, getMyTeamDetails } = require('../controllers/userController');
 const { protect } = require('../middlewares/protect');
 const User = require('../models/userModel');
 const Admin = require('../models/adminModel');
@@ -17,7 +17,11 @@ router.get('/logout' , logout);
 router.get('/all' , protect(Admin) , getAllUsers);
 router.put('/edit/:id' , protect(Admin) , editUser );
 router.delete('/delete/:id' , protect(Admin) , deleteUser);
-router.get('/details/:id' , protect(Admin) , getSingleUser)
+router.get('/details/:id' , protect(Admin) , getSingleUser);
+
+router.get('/dashboard-details', protect(User) , getDashboardDetails);
+router.get('/my-team-details', protect(User) , getMyTeamDetails);
+
 
 
 

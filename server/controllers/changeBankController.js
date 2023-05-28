@@ -12,7 +12,7 @@ exports.createChangeBankRequest = catchAsync(async (req , res , next) => {
         return next(new AppError('Missing required credentials.' , 400))
     }
     const newRequest = await ChangeBank.create({...req.body , user : req.user._id  });
-    sendSuccessResponse(res , 200 , {
+    sendSuccessResponse(res , 201 , {
         message : 'Request created successfully.' ,
         doc : newRequest
     })

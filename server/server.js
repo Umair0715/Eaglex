@@ -38,12 +38,12 @@ app.use('/api/change-bank' , require('./routes/chnageBankRoutes'));
 
 app.use(require('./middlewares/errorHandler'));
 
-const options = {
-    key: fs.readFileSync('eaglex.key', 'utf8').trim(),
-    cert: fs.readFileSync('eaglex.crt', 'utf8').trim()
-};
+// const options = {
+//     key: fs.readFileSync('eaglex.key', 'utf8').trim(),
+//     cert: fs.readFileSync('eaglex.crt', 'utf8').trim()
+// };
   
-const server = https.createServer(options, app);
+// const server = https.createServer(options, app);
 
 const PORT = process.env.PORT || 5500;
-server.listen(PORT , () => console.log(`server is listening on port ${PORT}`))
+app.listen(PORT , () => console.log(`server is listening on port ${PORT}`))

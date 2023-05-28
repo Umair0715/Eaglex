@@ -53,12 +53,16 @@ const investSchema = new mongoose.Schema({
     } ,
     status : {
         type : String ,
-        enum : ['running' , 'completed' , 'finished'], // jb wo complete hony k bad apni wallet my ly ly ga tw finished kr deingy
+        enum : ['running' , 'completed' , 'claimed'], // jb wo complete hony k bad apni amount wallet my ly ly ga tw claimed kr deingy
         default : 'running'
     } , 
     isActive : {
         type : Boolean ,
         default : true 
+    } ,
+    profitClaimed : {
+        type : Boolean ,
+        default : false 
     }
 } , { timestamps : true });
 
