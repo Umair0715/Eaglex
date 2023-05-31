@@ -12,7 +12,7 @@ const updateInvestmentProgress = require('./croneJobs/updateInvestProgress');
 const https = require('https');
 const fs = require('fs');
 
-// cron.schedule('*/1 * * * * *', updateInvestmentProgress);
+cron.schedule('0 * * * *', updateInvestmentProgress);
 
 
 
