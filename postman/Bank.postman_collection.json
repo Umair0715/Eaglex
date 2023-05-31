@@ -1,0 +1,136 @@
+{
+	"info": {
+		"_postman_id": "87218b49-a39d-48e8-b1b6-703e8ab7a580",
+		"name": "Bank",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17574990"
+	},
+	"item": [
+		{
+			"name": "Add Bank",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDZmYTc1ZmM3ZGZiZGFhZDIxYWU5ZmEiLCJpYXQiOjE2ODUwNDAyMTQsImV4cCI6MTY4NTY0NTAxNH0.Kx3_5TQItixGEGr6skK_edxOIdz-x4x988kSCt17HMg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"bankName\" : \"meezan\" ,\r\n    \"accountHolder\" : \"Umair\" ,\r\n    \"accountNo\" : \"2049384092343\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/bank",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"bank"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All banks",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/bank",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"bank"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specific bank details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/bank/user/645d2f3acb9ef4e8850f1587",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"bank",
+						"user",
+						"645d2f3acb9ef4e8850f1587"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Bank (Admin)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/bank/645d2f3acb9ef4e8850f1587",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"bank",
+						"645d2f3acb9ef4e8850f1587"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Bank",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/bank/645d2f3acb9ef4e8850f1587",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"bank",
+						"645d2f3acb9ef4e8850f1587"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get My bank Details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/bank/my",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"bank",
+						"my"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

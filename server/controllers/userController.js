@@ -192,7 +192,7 @@ exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
 });
 
 exports.getDashboardDetails = catchAsync(async(req , res , next) => {
-    const user = await User.findOne({ user : req.user._Id })
+    const user = await User.findById(req.user._id)
     .populate('wallet');
     const offers = await Offer.find().populate('company').limit(10).sort({ createdAt : -1 })
     sendSuccessResponse(res , 200 , {

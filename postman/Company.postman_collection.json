@@ -1,0 +1,116 @@
+{
+	"info": {
+		"_postman_id": "d771882a-0590-438a-9614-522493f3021a",
+		"name": "Company",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17574990"
+	},
+	"item": [
+		{
+			"name": "Create Company",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"Nestle\" ,\r\n    \"registrationId\" : \"0394802\" ,\r\n    \"location\" : \"Multan , Pakistan\" ,\r\n    \"annualTurnover\" : \"20 crors\" ,\r\n    \"since\" : \"2001\" ,\r\n    \"owner\" : \"Sabrina\" ,\r\n    \"description\" : \"Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum nisi labore accusantium incidunt delectus necessitatibus soluta corporis placeat porro, alias quo beatae at similique distinctio cupiditate, dolorum reprehenderit reiciendis aliquid tenetur libero blanditiis. Voluptatem nam, impedit consequuntur obcaecati dolorum quibusdam, rem delectus cum maxime iure consequatur voluptates libero? Commodi, rem?\" ,\r\n    \"logo\" : \"data:image/png;base64,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\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/company",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"company"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Companies",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/company",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"company"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Single Company",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/company/646108b3bb7ea0d4a31114c8",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"company",
+						"646108b3bb7ea0d4a31114c8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Company",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"annualTurnover\" : \"1B\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/company/646108b3bb7ea0d4a31114c8",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"company",
+						"646108b3bb7ea0d4a31114c8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Company",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/company/646108b3bb7ea0d4a31114c8",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"company",
+						"646108b3bb7ea0d4a31114c8"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

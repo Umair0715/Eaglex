@@ -1,0 +1,18 @@
+{
+	"info": {
+		"_postman_id": "78b258a6-1b68-4a72-9089-6f9ea6916cbe",
+		"name": "Invites",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17574990"
+	},
+	"item": [
+		{
+			"name": "Invite User",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

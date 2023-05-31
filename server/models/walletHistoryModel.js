@@ -26,5 +26,19 @@ const walletHistorySchema = new mongoose.Schema({
     }
 } , { timestamps : true });
 
+walletHistorySchema.pre(/^find/ , function(next) {
+    this.populate([
+        {
+            path : 'wallet' , 
+            select : 'totalBalance'
+        } , 
+        {
+            path : 'user' ,
+            select : 'firstName lastName phone totalProfit totalInvestAmount isActive'
+        }
+    ]);
+    next();
+});
+
 const WalletHistory = mongoose.model('WalletHistory', walletHistorySchema);
 module.exports = WalletHistory;

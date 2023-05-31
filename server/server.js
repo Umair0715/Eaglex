@@ -35,6 +35,7 @@ app.use('/api/invite' , require('./routes/inviteRoutes'));
 app.use('/api/bank' , require('./routes/bankRoutes'));
 app.use('/api/withdraw' , require('./routes/withdrawRoutes'));
 app.use('/api/change-bank' , require('./routes/chnageBankRoutes'));
+app.use('/api/wallet-history' , require('./routes/walletHistoryRoutes'));
 
 app.use(require('./middlewares/errorHandler'));
 

@@ -12,7 +12,7 @@ const User = require('../models/userModel');
 
 exports.createInvest = catchAsync(async(req , res , next) => {
     let { amount } = req.body;
-    amount = parseInt(amount);
+    amount = Number(amount);
     const { error } = investValidation.validate(req.body);
     if(error) {
         return next(new AppError(error.details[0].message , 400))
@@ -39,8 +39,8 @@ exports.createInvest = catchAsync(async(req , res , next) => {
     if(investExist) {
         return next(new AppError('You already invested in this offer. to re-invest please wait until this offer is completed.' , 400))
     }
-    userWallet.totalBalance -= parseInt(amount);
-    await userWallet.save();
+    userWallet.totalBalance -= amount;
+    const newWallet = await userWallet.save();
     const newInvest = await Invest.create({
         ...req.body ,
         offerProfit : offer.profit ,
@@ -61,7 +61,7 @@ exports.createInvest = catchAsync(async(req , res , next) => {
     sendSuccessResponse(res , 200 , {
         message : `You have successfully invested in offer ${offer.name}` ,
         doc : newInvest 
-    })
+    });
 });
 
 const fetchInvests = async (req , res , query) => {
@@ -145,9 +145,11 @@ exports.claimInvestProfit = catchAsync(async(req , res , next) => {
         return next(new AppError("can't process this request." , 400))
     }
     const userWallet = await Wallet.findOne({ user : invest.user._id });
-    const userProfit = parseInt(invest?.amount) + parseInt(invest?.returnProfitAmount);
+    const userProfit = Number(invest?.amount) + Number(invest?.returnProfitAmount);
     userWallet.totalBalance += userProfit ;
     await userWallet.save();
+
+    createWalletHistory(userProfit , '+' , userWallet._id , invest.user._id , `Claimed ${invest?.offer?.name} offer profit`);
 
     invest.status = 'claimed';
     invest.profitClaimed = true ;

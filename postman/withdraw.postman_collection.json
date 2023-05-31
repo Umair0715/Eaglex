@@ -1,0 +1,99 @@
+{
+	"info": {
+		"_postman_id": "0268c6c4-c6a9-4183-bcfa-f1db54498301",
+		"name": "withdraw",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17574990"
+	},
+	"item": [
+		{
+			"name": "Create Withdraw Request",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDZmYTc1ZmM3ZGZiZGFhZDIxYWU5ZmEiLCJpYXQiOjE2ODUwNDAyMTQsImV4cCI6MTY4NTY0NTAxNH0.Kx3_5TQItixGEGr6skK_edxOIdz-x4x988kSCt17HMg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"amount\" : \"5000\",\r\n    \"bankDetails\" : \"646fad8a5d44f0fec2947ad1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/withdraw",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"withdraw"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get My Withdraw Requests",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/withdraw/my",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"withdraw",
+						"my"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Withdraw Requests",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/withdraw",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"withdraw"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Withdraw Request Details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/withdraw/6469f82363b512354086c4cc",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"withdraw",
+						"6469f82363b512354086c4cc"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
