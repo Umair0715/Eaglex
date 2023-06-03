@@ -77,8 +77,22 @@ exports.updateDepositRequest = catchAsync(async(req , res ,next) => {
     if(!request) {
         return next(new AppError('Invalid id. Document not found.' , 404))
     }
-    if(request.status === 'approved'){
-        return next(new AppError('This request is already approved. Now you cannot update its status.' , 400))
+    console.log({ request });
+    if(request.status === 'approved') {
+        const userWallet = await Wallet.findOne({ user : request.user._id });
+        userWallet.totalBalance -= Number(request.transferAmount);
+        await userWallet.save();
+        const updatedRequest = await Deposit.findByIdAndUpdate(id , req.body , {
+            new : true , 
+            runValidators : true 
+        }).populate(populateObj);
+        
+        createWalletHistory(request.transferAmount , '-' , userWallet._id , request.user._id , `Detucted by an admin`);
+
+        return sendSuccessResponse(res , 200 , {
+            message : 'Request updated successfully.' ,
+            doc : updatedRequest
+        });
     }
     const { status } = req.body;
     if(status === 'declined'){
@@ -92,7 +106,7 @@ exports.updateDepositRequest = catchAsync(async(req , res ,next) => {
         });
     }else if (status === 'approved'){
         const userWallet = await Wallet.findOne({ user : request.user._id });
-        userWallet.totalBalance += parseInt(req.body.transferAmount);
+        userWallet.totalBalance += Number(req.body.transferAmount);
         await userWallet.save();
         const updatedRequest = await Deposit.findByIdAndUpdate(id , req.body , {
             new : true , 

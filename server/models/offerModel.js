@@ -33,7 +33,7 @@ const offerSchema = new mongoose.Schema({
     } ,
     status : {
         type : String ,
-        required : [true , 'Status is required.']
+        default : null 
     } 
 } , { timestamps : true });
 

@@ -10,11 +10,11 @@ const connectDB = require('./utils/db');
 const cron = require('node-cron');
 const updateInvestmentProgress = require('./croneJobs/updateInvestProgress');
 const https = require('https');
+const http = require('http')
 const fs = require('fs');
 
+
 cron.schedule('0 * * * *', updateInvestmentProgress);
-
-
 
 connectDB();
 
@@ -36,8 +36,13 @@ app.use('/api/bank' , require('./routes/bankRoutes'));
 app.use('/api/withdraw' , require('./routes/withdrawRoutes'));
 app.use('/api/change-bank' , require('./routes/chnageBankRoutes'));
 app.use('/api/wallet-history' , require('./routes/walletHistoryRoutes'));
+app.use('/api/chat' , require('./routes/chatRoutes'));
+app.use('/api/message' , require('./routes/messageRoutes'));
 
 app.use(require('./middlewares/errorHandler'));
+
+
+const { Server } = require('socket.io');
 
 // const options = {
 //     key: fs.readFileSync('eaglex.key', 'utf8').trim(),
@@ -46,5 +51,43 @@ app.use(require('./middlewares/errorHandler'));
   
 // const server = https.createServer(options, app);
 
+const httpServer = http.createServer(app);
+const io = new Server(httpServer , {
+    cors : {
+        origin : ['http://127.0.0.1:3000' , 'http://127.0.0.1:3001' , 'http://localhost:3000' , 'http://localhost:3001' , 'http://203.161.32.12:3000' , 'http://203.161.32.12:3001']
+    }
+});
+
+let chats = [];
+
+const addToChats = (chat) => {
+    if(!chats.find(ch => ch._id === chat._id)){
+        chats.push(chat);
+    }
+}
+
+const removeFromChats = (chat) => {
+    chats = chats.filter(ch => ch._id !== chat._id );
+    console.log({ all : chats })
+}
+
+io.on('connection' , (socket) => {
+    console.log('someone connected' , socket.id);
+
+    socket.on('join-chat' , (chat) => {
+        console.log('joined')
+        addToChats(chat);
+        socket.join(chat._id)
+    });
+    
+    socket.on('new-message' , (message) => {
+        socket.broadcast.to(message.chat._id).emit('new-message-recieved' , message);
+    })
+
+    socket.on('leave-chat' , (chat) => {
+        removeFromChats(chat);
+    })
+})
+
 const PORT = process.env.PORT || 5500;
-app.listen(PORT , () => console.log(`server is listening on port ${PORT}`))
+httpServer.listen(PORT , () => console.log(`server is listening on port ${PORT}`))

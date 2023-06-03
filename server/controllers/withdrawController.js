@@ -106,15 +106,15 @@ exports.updateWithdrawRequest = catchAsync(async(req , res , next) => {
         return next(new AppError('Withdraw request id is required.' , 400))
     }
     const { proof } = req.body;
-    if(!proof) {
-        return next(new AppError('Proof image is required.' , 400))
+    if(proof) {
+        const { fileName } = uploadImage(proof , 'withdraw');
+        req.body.proof = '/withdraw/' + fileName ;
     }
-    const { fileName } = uploadImage(proof , 'withdraw');
-    req.body.proof = '/withdraw/' + fileName ;
     const updatedRequest = await Withdraw.findByIdAndUpdate(id , req.body , {
         new : true ,
         runValidators : true 
     }).populate('user');
+    
     if(req.body.status === 'declined') {
         const userWallet = await Wallet.findOne({ user : updatedRequest.user._id  });
         userWallet.totalBalance += updatedRequest.withdrawAmount;

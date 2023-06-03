@@ -16,7 +16,7 @@ const offerValidation = joi.object().keys({
         'any.required' : "Company is required."
     }) ,
     isActive : joi.boolean().required() ,
-    status : joi.string().required() ,
+    status : joi.string().optional() ,
 });
 
 module.exports = offerValidation;

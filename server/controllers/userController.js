@@ -56,7 +56,7 @@ exports.getAllUsers = catchAsync(async(req , res , next) => {
     const page = Number(req.query.page) || 1 ;
     const sort = req.query.sort || -1;
     const pageSize = req.query.pageSize || 10;
-    if(req.query.pageSize && req.query.pageSize > 25){
+    if(req.query.pageSize && req.query.pageSize > 40){
         return next(new AppError('pageSize should be less than or equal to 25' , 400));
     }
     const keyword = req.query.keyword ?
@@ -198,4 +198,80 @@ exports.getDashboardDetails = catchAsync(async(req , res , next) => {
     sendSuccessResponse(res , 200 , {
         user , offers
     })
+});
+
+exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    const levelOneMembers = await User.find({ referrer: user.referralCode })
+    .select('firstName lastName phone isActive createdAt')
+    .exec();
+    const levelTwoMembers = await User.find({ referrer: { $in: levelOneMembers.map(member => member.referralCode ) } })
+    .select('firstName lastName phone isActive createdAt')
+    .exec();
+    const levelThreeMembers = await User.find({ referrer: { $in: levelTwoMembers.map(member => member.referralCode ) } })
+    .select('firstName lastName phone isActive createdAt')
+    .exec();
+    
+    let teamMembers = [];
+    const level  = parseInt(req.query.level);
+    if (level === 1) {
+        levelOneMembers.forEach(item => teamMembers.push({...item._doc , level : 1 }))
+    }else if (level === 2) {
+        levelTwoMembers.forEach(item => teamMembers.push({...item._doc , level : 2 }))
+    }else if (level === 3){
+        levelThreeMembers.forEach(item => teamMembers.push({...item._doc , level : 3 })) 
+    }else {
+        levelOneMembers.forEach(item => teamMembers.push({...item._doc , level : 1 }))
+        levelTwoMembers.forEach(item => teamMembers.push({...item._doc , level : 2 }))
+        levelThreeMembers.forEach(item => teamMembers.push({...item._doc , level : 3 })) 
+    }
+
+    const totalTeamMembers = levelOneMembers.length + levelTwoMembers.length + levelThreeMembers.length;
+
+    const levelOneMembersCount = levelOneMembers.length;
+    const levelTwoMembersCount = levelTwoMembers.length;
+    const levelThreeMembersCount = levelThreeMembers.length;
+
+    sendSuccessResponse(res , 200 , {
+        teamMembers , 
+        totalTeamMembers ,
+        levelOneMembersCount ,
+        levelTwoMembersCount , 
+        levelThreeMembersCount
+    });
+});
+
+exports.searchUser = catchAsync(async(req , res , next) => {
+    const page = Number(req.query.page) || 1 ;
+    const pageSize = 150;
+
+    const keyword = req.query.keyword ?
+    {
+        $or : [
+            {
+                firstName : {
+                    $regex : req.query.keyword ,
+                    $options : 'i'
+                } 
+            } ,
+            {
+                lastName : {
+                    $regex : req.query.keyword ,
+                    $options : 'i'
+                }
+            }
+        ]
+    } : {} ;   
+
+    const docCount = await User.countDocuments(keyword)
+    const docs = await User.find(keyword)
+    .select('firstName lastName image phone')
+    .skip(pageSize * (page - 1))
+    .limit(pageSize)
+    const pages = Math.ceil(docCount/pageSize);
+
+    sendSuccessResponse(res , 200 , {
+        docs , page , pages , docCount 
+    });
 });
