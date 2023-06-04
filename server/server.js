@@ -82,7 +82,15 @@ io.on('connection' , (socket) => {
     
     socket.on('new-message' , (message) => {
         socket.broadcast.to(message.chat._id).emit('new-message-recieved' , message);
-    })
+    });
+
+    socket.on('start-typing' , (roomId) => {
+        socket.broadcast.to(roomId).emit('start-typing')
+    });
+    
+    socket.on('stop-typing' , (roomId) => {
+        socket.broadcast.to(roomId).emit('stop-typing')
+    });
 
     socket.on('leave-chat' , (chat) => {
         removeFromChats(chat);
