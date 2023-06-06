@@ -26,6 +26,14 @@ const walletHistorySchema = new mongoose.Schema({
     }
 } , { timestamps : true });
 
+const moment = require('moment-timezone')
+walletHistorySchema.pre('save', function (next) {
+    if (this.isNew) {
+      this.createdAt = moment().tz('Asia/Karachi');
+    }
+    next();
+});
+
 walletHistorySchema.pre(/^find/ , function(next) {
     this.populate([
         {

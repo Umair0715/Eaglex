@@ -1,0 +1,54 @@
+{
+	"info": {
+		"_postman_id": "93cc0987-2461-49e0-9095-439f73d3310f",
+		"name": "Message",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17574990"
+	},
+	"item": [
+		{
+			"name": "Send Message",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"message\" : \"test message\" ,\r\n    \"chatId\" : \"ObjectId\" ,\r\n    \"sender\" : \"ObjectId\",\r\n    \"type\" : \"text/file\",\r\n    \"senderType\" : \"in your case alwasy 'User'\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/message",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"message"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Chat Messages",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/message/646ac799f23dae4dbb86db1f",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"message",
+						"646ac799f23dae4dbb86db1f"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

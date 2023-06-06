@@ -51,5 +51,13 @@ const depositSchema = new mongoose.Schema({
     }
 }, { timestamps : true });
 
+const moment = require('moment-timezone')
+depositSchema.pre('save', function (next) {
+    if (this.isNew) {
+      this.createdAt = moment().tz('Asia/Karachi');
+    }
+    next();
+});
+
 const Deposit = mongoose.model('Deposit' , depositSchema);
 module.exports = Deposit;

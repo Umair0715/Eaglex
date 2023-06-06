@@ -35,5 +35,13 @@ const messageSchema = new mongoose.Schema({
     }
 } , { timestamps : true });
 
+const moment = require('moment-timezone')
+messageSchema.pre('save', function (next) {
+    if (this.isNew) {
+      this.createdAt = moment().tz('Asia/Karachi');
+    }
+    next();
+});
+
 const Message = mongoose.model('Message' , messageSchema);
 module.exports = Message;

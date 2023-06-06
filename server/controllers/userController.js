@@ -111,7 +111,7 @@ exports.getAllUsers = catchAsync(async(req , res , next) => {
 
 exports.deleteUser = handlerFactory.deleteOne(User);
 exports.editUser = handlerFactory.updateOne(User);
-exports.getSingleUser = handlerFactory.getOne(User);
+exports.getSingleUser = handlerFactory.getOne(User , 'wallet');
 exports.blockUser = userFactory.block(User);
 
 
@@ -203,15 +203,18 @@ exports.getDashboardDetails = catchAsync(async(req , res , next) => {
 exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
     const { id } = req.params;
     const user = await User.findById(id);
-    const levelOneMembers = await User.find({ referrer: user.referralCode })
-    .select('firstName lastName phone isActive createdAt')
+    const levelOneMembers = await User.find({ referrer : user.referralCode })
+    .select('firstName lastName phone isActive createdAt referrer referralCode')
     .exec();
-    const levelTwoMembers = await User.find({ referrer: { $in: levelOneMembers.map(member => member.referralCode ) } })
-    .select('firstName lastName phone isActive createdAt')
+    
+    const levelTwoMembers = await User.find({ referrer : { $in: levelOneMembers.map(member => member.referralCode ) } })
+    .select('firstName lastName phone isActive createdAt referrer referralCode')
     .exec();
-    const levelThreeMembers = await User.find({ referrer: { $in: levelTwoMembers.map(member => member.referralCode ) } })
-    .select('firstName lastName phone isActive createdAt')
+    
+    const levelThreeMembers = await User.find({ referrer : { $in: levelTwoMembers.map(member => member.referralCode ) } })
+    .select('firstName lastName phone isActive createdAt referrer referralCode')
     .exec();
+
     
     let teamMembers = [];
     const level  = parseInt(req.query.level);

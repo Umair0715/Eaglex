@@ -6,7 +6,7 @@ const { sendSuccessResponse } = require('../utils/helpers');
 const investValidation = require('../validations/investValidation');
 const Offer = require('../models/offerModel');
 const Wallet = require('../models/walletModel');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const createWalletHistory = require('../utils/CreateWalletHistory');
 const User = require('../models/userModel');
 
@@ -41,15 +41,17 @@ exports.createInvest = catchAsync(async(req , res , next) => {
     }
     userWallet.totalBalance -= amount;
     const newWallet = await userWallet.save();
+    const totalOfferProfit = offer.profit * offer.timePeriod;
     const newInvest = await Invest.create({
         ...req.body ,
-        offerProfit : offer.profit ,
-        totalProfitReturnInPer : 100 + offer.profit ,
-        totalProfitReturnInAmount : ((amount / 100 ) * offer.profit ) + amount,
-        returnProfitAmount : (amount / 100 ) * offer.profit ,
+        offerProfit : offer.profit , // daily profit in %
+        totalProfit : totalOfferProfit , // total Offer Profit in %
+        totalProfitReturnInPer : 100 + totalOfferProfit ,
+        totalProfitReturnInAmount : ((amount / 100 ) * totalOfferProfit ) + amount,
+        returnProfitAmount : (amount / 100 ) * totalOfferProfit ,
         user : req.user._id ,
-        startDate : moment() ,
-        endDate : moment().add(offer.timePeriod , 'days')
+        startDate : moment().tz('Asia/Karachi') ,
+        endDate : moment().add(offer.timePeriod, 'days').tz('Asia/Karachi')
     });
 
     const user = await User.findById(req.user._id);
@@ -148,6 +150,10 @@ exports.claimInvestProfit = catchAsync(async(req , res , next) => {
     const userProfit = Number(invest?.amount) + Number(invest?.returnProfitAmount);
     userWallet.totalBalance += userProfit ;
     await userWallet.save();
+
+    const user = await User.findById(req.user._id);
+    user.totalProfit += Number(invest?.returnProfitAmount);
+    user.save();
 
     createWalletHistory(userProfit , '+' , userWallet._id , invest.user._id , `Claimed ${invest?.offer?.name} offer profit`);
 

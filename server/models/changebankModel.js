@@ -35,5 +35,13 @@ const changeBankSchema = new mongoose.Schema({
 
 });
 
+const moment = require('moment-timezone')
+changeBankSchema.pre('save', function (next) {
+    if (this.isNew) {
+      this.createdAt = moment().tz('Asia/Karachi');
+    }
+    next();
+});
+
 const ChangeBank = mongoose.model('ChangeBank' , changeBankSchema);
 module.exports = ChangeBank;

@@ -37,5 +37,13 @@ const offerSchema = new mongoose.Schema({
     } 
 } , { timestamps : true });
 
+const moment = require('moment-timezone')
+offerSchema.pre('save', function (next) {
+    if (this.isNew) {
+      this.createdAt = moment().tz('Asia/Karachi');
+    }
+    next();
+});
+
 const Offer = mongoose.model('Offer' , offerSchema);
 module.exports = Offer;

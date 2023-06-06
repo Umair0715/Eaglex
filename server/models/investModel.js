@@ -35,7 +35,11 @@ const investSchema = new mongoose.Schema({
         type : Number ,
         required : [true , 'Total Profit returned is required.']
     } ,
-    offerProfit : { // %
+    totalProfit : {
+        type : Number ,
+        required : [true , 'Offer total profit is required.']
+    } ,
+    offerProfit : { // daily profit in %
         type : Number ,
         required : [true , 'Offer profit is required.']
     } , 
@@ -65,6 +69,14 @@ const investSchema = new mongoose.Schema({
         default : false 
     }
 } , { timestamps : true });
+
+const moment = require('moment-timezone')
+investSchema.pre('save', function (next) {
+    if (this.isNew) {
+      this.createdAt = moment().tz('Asia/Karachi');
+    }
+    next();
+});
 
 const Invest = mongoose.model('Invest' , investSchema);
 module.exports = Invest;

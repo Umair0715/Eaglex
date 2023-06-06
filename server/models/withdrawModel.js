@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const withdrawModel = new mongoose.Schema({
+const withdrawSchema = new mongoose.Schema({
     user : {
         type : mongoose.Schema.Types.Object ,
         ref : 'User' ,
@@ -38,6 +38,13 @@ const withdrawModel = new mongoose.Schema({
     }
 } , { timestamps : true });
 
+const moment = require('moment-timezone')
+withdrawSchema.pre('save', function (next) {
+    if (this.isNew) {
+      this.createdAt = moment().tz('Asia/Karachi');
+    }
+    next();
+});
 
-const Withdraw = mongoose.model('Withdraw' , withdrawModel);
+const Withdraw = mongoose.model('Withdraw' , withdrawSchema);
 module.exports = Withdraw;

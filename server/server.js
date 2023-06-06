@@ -14,7 +14,8 @@ const http = require('http')
 const fs = require('fs');
 
 
-cron.schedule('0 * * * *', updateInvestmentProgress);
+// cron.schedule('0 * * * *', updateInvestmentProgress); // every hour 
+cron.schedule('* * * * *', updateInvestmentProgress); // every minute
 
 connectDB();
 
@@ -38,6 +39,7 @@ app.use('/api/change-bank' , require('./routes/chnageBankRoutes'));
 app.use('/api/wallet-history' , require('./routes/walletHistoryRoutes'));
 app.use('/api/chat' , require('./routes/chatRoutes'));
 app.use('/api/message' , require('./routes/messageRoutes'));
+app.use('/api/wallet' , require('./routes/walletRoutes'));
 
 app.use(require('./middlewares/errorHandler'));
 
@@ -75,7 +77,6 @@ io.on('connection' , (socket) => {
     console.log('someone connected' , socket.id);
 
     socket.on('join-chat' , (chat) => {
-        console.log('joined')
         addToChats(chat);
         socket.join(chat._id)
     });

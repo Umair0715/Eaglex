@@ -56,9 +56,13 @@ const userSchema = new mongoose.Schema({
 
 } , { timestamps : true });
 
+const moment = require('moment-timezone')
 userSchema.pre('save' , async function(next) {
     if(!this.isModified('password')) return;
     this.password = await bcrypt.hash(this.password , 10);
+    if (this.isNew) {
+        this.createdAt = moment().tz('Asia/Karachi');
+    }
     next();
 });
 

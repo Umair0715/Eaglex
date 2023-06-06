@@ -30,5 +30,13 @@ const chatSchema = new mongoose.Schema({
     }
 }, { timestamps : true } );
 
+const moment = require('moment-timezone')
+chatSchema.pre('save', function (next) {
+    if (this.isNew) {
+      this.createdAt = moment().tz('Asia/Karachi');
+    }
+    next();
+});
+
 const Chat = mongoose.model('Chat' , chatSchema);
 module.exports = Chat;

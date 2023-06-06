@@ -37,10 +37,10 @@ const settingsSchema = new mongoose.Schema({
         type : Number ,
         default : 2.1 
     } , 
-    govtFee : {
-        type : Number ,
-        default : 3
-    } ,
+    // govtFee : {
+    //     type : Number ,
+    //     default : 3
+    // } ,
     platformFee : {
         type : Number ,
         default : 2

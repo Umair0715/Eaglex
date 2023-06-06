@@ -10,6 +10,8 @@ const Admin = require('../models/adminModel');
 const Setting = require('../models/settingsModel');
 const uploadImage = require('../utils/uploadImage');
 const User = require('../models/userModel')
+const createWalletHistory = require('../utils/CreateWalletHistory');
+
 
 exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     const { bankDetails , amount } = req.body;
@@ -33,7 +35,7 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     const admin = await Admin.findOne({ isSuperAdmin : true })
     const adminWallet = await AdminWallet.findOne({ admin : admin._id });
     const settings = await Setting.findOne({});
-    const withdrawFee = (amount/100) * (settings.govtFee + settings.platformFee);
+    const withdrawFee = (amount/100) * settings.platformFee;
     adminWallet.totalBalance += withdrawFee;
     await adminWallet.save();
 
@@ -44,6 +46,9 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
         withdrawFee ,
         receivedAmount : amount - withdrawFee
     });
+
+    createWalletHistory(amount , '-' , userWallet._id , req.user._id , 'withdrawn');
+
     sendSuccessResponse(res , 200 , { 
         message : 'Withdraw request created successfully.' ,
         doc : newRequest
