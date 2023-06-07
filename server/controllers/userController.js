@@ -292,13 +292,10 @@ exports.sendForgotPasswordOtp = catchAsync(async(req , res , next) => {
     try {
         await axios.get(url);
         const currentDate = moment();
-        // user.resetPasswordToken = otp;
-        // user.resetPasswordTokenExpire = moment(currentDate).add(10, 'minutes');
-        // await user.save();
-        await User.findByIdAndUpdate(user._id , { 
-            resetPasswordToken : otp ,
-            resetPasswordTokenExpire : moment(currentDate).add(10, 'minutes')
-        })
+        user.resetPasswordToken = otp;
+        user.resetPasswordTokenExpire = moment(currentDate).add(10, 'minutes');
+        await user.save();
+        
         return sendSuccessResponse(res , 200 , {
             message : 'Check your phone for the OTP and enter it below to reset your password.'
         })
@@ -311,7 +308,7 @@ exports.sendForgotPasswordOtp = catchAsync(async(req , res , next) => {
 exports.verifyOtp = catchAsync(async(req , res , next) => {
     const { otp } = req.body;
     if(!otp) return next(new AppError('Otp is required.' , 400))
-    const user = await User.findOne({ passwordResetToken : otp });
+    const user = await User.findOne({ resetPasswordToken : otp });
     if(!user) {
         return next(new AppError("Invalid otp." , 400))
     }
