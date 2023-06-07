@@ -291,10 +291,14 @@ exports.sendForgotPasswordOtp = catchAsync(async(req , res , next) => {
     const url = `http://api.veevotech.com/sendsms?hash=${process.env.OTP_API_KEY}&receivenum=${phone}&sendernum=8583&textmessage=${otp}`;
     try {
         await axios.get(url);
-        user.resetPasswordToken = otp;
         const currentDate = moment();
-        user.resetPasswordTokenExpire = moment(currentDate).add(10, 'minutes');
-        await user.save();
+        // user.resetPasswordToken = otp;
+        // user.resetPasswordTokenExpire = moment(currentDate).add(10, 'minutes');
+        // await user.save();
+        await User.findByIdAndUpdate(user._id , { 
+            resetPasswordToken : otp ,
+            resetPasswordTokenExpire : moment(currentDate).add(10, 'minutes')
+        })
         return sendSuccessResponse(res , 200 , {
             message : 'Check your phone for the OTP and enter it below to reset your password.'
         })
