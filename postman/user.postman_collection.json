@@ -57,7 +57,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"phone\" : \"03116351524\" ,\r\n    \"password\" : \"user1234\"\r\n}",
+					"raw": "{\r\n    \"phone\" : \"03021071171\" ,\r\n    \"password\" : \"user12345\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -172,6 +172,87 @@
 					"path": [
 						"user",
 						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Forgot Password",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"phone\" : \"03021071171\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/user/forgot-password",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"user",
+						"forgot-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Otp",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"otp\" : \"155335\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/user/verify-otp",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"user",
+						"verify-otp"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reset Password",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"otp\" : \"155335\" ,\r\n    \"newPassword\" : \"user12345\" ,\r\n    \"confirmPassword\" : \"user12345\" // optional , you can confirm it on frontend \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/user/reset-password",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"user",
+						"reset-password"
 					]
 				}
 			},

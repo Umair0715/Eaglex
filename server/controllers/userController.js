@@ -292,7 +292,8 @@ exports.sendForgotPasswordOtp = catchAsync(async(req , res , next) => {
     try {
         await axios.get(url);
         user.resetPasswordToken = otp;
-        user.resetPasswordTokenExpire = moment().add(10, 'minutes');
+        const currentDate = moment();
+        user.resetPasswordTokenExpire = moment(currentDate).add(10, 'minutes');
         await user.save();
         return sendSuccessResponse(res , 200 , {
             message : 'Check your phone for the OTP and enter it below to reset your password.'
