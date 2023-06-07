@@ -326,7 +326,7 @@ exports.verifyOtp = catchAsync(async(req , res , next) => {
 
 exports.resetPassword = catchAsync(async(req , res , next) => {
     const { otp , newPassword , confirmPassword } = req.body;
-    const user = await User.findOne({ otp });
+    const user = await User.findOne({ resetPasswordToken : otp });
     if(confirmPassword && newPassword !== confirmPassword) {
         return next(new AppError('Passwords are incorrect.' , 400))
     }
