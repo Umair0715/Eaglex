@@ -11,7 +11,9 @@ const userFactory = require('./factories/userFactory');
 const uploadImage = require('../utils/uploadImage');
 const handlerFactory = require('./factories/handlerFactory');
 const Offer = require('../models/offerModel');
-const Setting = require('../models/settingsModel')
+const Setting = require('../models/settingsModel');
+const { default: axios } = require('axios');
+const moment = require('moment')
 
 exports.register = catchAsync(async(req , res , next) => {
     const { phone } = req.body;
@@ -278,3 +280,59 @@ exports.searchUser = catchAsync(async(req , res , next) => {
         docs , page , pages , docCount 
     });
 });
+
+exports.sendForgotPasswordOtp = catchAsync(async(req , res , next) => {
+    const { phone } = req.body;
+    const user = await User.findOne({ phone });
+    if(!user) {
+        return next(new AppError('This Phone number is not registered.' , 400))
+    }
+    const otp = generateReferralCode();
+    const url = `http://api.veevotech.com/sendsms?hash=${process.env.OTP_API_KEY}&receivenum=${phone}&sendernum=8583&textmessage=${otp}`;
+    try {
+        await axios.get(url);
+        user.resetPasswordToken = otp;
+        user.resetPasswordTokenExpire = moment().add(10, 'minutes');
+        await user.save();
+        return sendSuccessResponse(res , 200 , {
+            message : 'Check your phone for the OTP and enter it below to reset your password.'
+        })
+    } catch (error) {
+        console.log({ otpError : error });
+        return next(new AppError('Internal server error' , 500))
+    }
+});
+
+exports.verifyOtp = catchAsync(async(req , res , next) => {
+    const { otp } = req.body;
+    if(!otp) return next(new AppError('Otp is required.' , 400))
+    const user = await User.findOne({ passwordResetToken : otp });
+    if(!user) {
+        return next(new AppError("Invalid otp." , 400))
+    }
+    if(new Date(user.resetPasswordTokenExpire) < new Date()) {
+        return next(new AppError('Otp has been expired. Please try again with new otp.' , 400))
+    }
+    sendSuccessResponse(res , 200 , {
+        message : 'Otp Verified.' , 
+        doc : {
+            otp ,
+            verified : true 
+        }
+    })
+}); 
+
+exports.resetPassword = catchAsync(async(req , res , next) => {
+    const { otp , newPassword , confirmPassword } = req.body;
+    const user = await User.findOne({ otp });
+    if(confirmPassword && newPassword !== confirmPassword) {
+        return next(new AppError('Passwords are incorrect.' , 400))
+    }
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordTokenExpire = undefined;
+    await user.save();
+    sendSuccessResponse(res , 200 , {
+        message : 'Password changed successfully.' ,
+    });
+})

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// const DB = 'mongodb://localhost:27017/markaz';
+// const DB = 'mongodb://localhost:27017/eaglex';
 const DB = process.env.DATABASE_URI;
 
 const connectDB = () => {

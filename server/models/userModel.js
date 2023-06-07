@@ -52,6 +52,14 @@ const userSchema = new mongoose.Schema({
     totalInvestAmount : {
         type : Number ,
         default : null
+    } ,
+    resetPasswordToken : {
+        type : String ,
+        default : null 
+    } ,
+    resetPasswordTokenExpire : {
+        type : Date , 
+        default : null 
     }
 
 } , { timestamps : true });

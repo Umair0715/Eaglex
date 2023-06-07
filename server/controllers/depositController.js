@@ -77,7 +77,6 @@ exports.updateDepositRequest = catchAsync(async(req , res ,next) => {
     if(!request) {
         return next(new AppError('Invalid id. Document not found.' , 404))
     }
-    console.log({ request });
     if(request.status === 'approved') {
         const userWallet = await Wallet.findOne({ user : request.user._id });
         userWallet.totalBalance -= Number(request.transferAmount);
