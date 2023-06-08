@@ -147,7 +147,7 @@ exports.claimInvestProfit = catchAsync(async(req , res , next) => {
         return next(new AppError("can't process this request." , 400))
     }
     const userWallet = await Wallet.findOne({ user : invest.user._id });
-    const userProfit = Number(invest?.amount) + Number(invest?.returnProfitAmount);
+    const userProfit = Number(invest.amount) + Number(invest.returnProfitAmount);
     userWallet.totalBalance += userProfit ;
     await userWallet.save();
 

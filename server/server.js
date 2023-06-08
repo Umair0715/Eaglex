@@ -15,6 +15,7 @@ const fs = require('fs');
 
 
 cron.schedule('0 * * * *', updateInvestmentProgress); // every hour 
+// cron.schedule('*/1 * * * * *', updateInvestmentProgress); // every second
 // cron.schedule('* * * * *', updateInvestmentProgress); // every minute
 
 connectDB();

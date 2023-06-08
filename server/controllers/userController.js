@@ -290,7 +290,8 @@ exports.sendForgotPasswordOtp = catchAsync(async(req , res , next) => {
     const otp = generateReferralCode();
     const url = `http://api.veevotech.com/sendsms?hash=${process.env.OTP_API_KEY}&receivenum=${phone}&sendernum=8583&textmessage=${otp}`;
     try {
-        await axios.get(url);
+        const resp = await axios.get(url);
+        console.log({ otpResponse : resp })
         const currentDate = moment();
         user.resetPasswordToken = otp;
         user.resetPasswordTokenExpire = moment(currentDate).add(10, 'minutes');
