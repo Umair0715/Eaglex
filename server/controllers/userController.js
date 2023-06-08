@@ -48,10 +48,10 @@ exports.register = catchAsync(async(req , res , next) => {
     })
 });
 
-exports.login = userFactory.login(User , 'wallet')
+exports.login = userFactory.login(User , 'wallet');
 exports.getProfile = userFactory.profile(User , 'wallet');
 exports.logout = userFactory.logout(User);
-exports.updateProfile = userFactory.updateProfile(User , 'users')
+exports.updateProfile = userFactory.updateProfile(User , 'users');
 exports.updatePassword = userFactory.updatePassword(User);
 
 exports.getAllUsers = catchAsync(async(req , res , next) => {

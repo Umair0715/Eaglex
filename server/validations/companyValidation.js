@@ -4,7 +4,7 @@ const companyValidation = joi.object().keys({
     name : joi.string().required().messages({
         'any.required' : 'Company Name is required.'
     }) ,
-    registrationId : joi.string().required() ,
+    registrationId : joi.string().optional() ,
     location : joi.string().required() ,
     annualTurnover : joi.string().required().messages({
         'any.required' : "Company Annual turnover is required."

@@ -7,7 +7,7 @@ const companySchema = new mongoose.Schema({
     } ,
     registrationId : {
         type : String ,
-        required : [true , 'Registration id is required']
+        default : null
     } ,
     location : {
         type : String ,

@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     } ,
     image : {
         type : String ,
-        default : 'default.png' 
+        default : '/users/default.png' 
     } ,
     password : {
         type : String ,

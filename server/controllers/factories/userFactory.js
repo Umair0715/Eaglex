@@ -3,6 +3,7 @@ const AppError = require('../../utils/appError');
 const { sendSuccessResponse } = require('../../utils/helpers');
 const signToken = require('../../utils/signToken');
 const sendCookie = require('../../utils/sendCookies');
+const uploadImage = require('../../utils/uploadImage');
 
 
 exports.login = (Model , populateItems = '') => catchAsync(async(req , res , next) => {
@@ -71,9 +72,10 @@ exports.updatePassword = Model => catchAsync(async(req , res , next) => {
 
 exports.updateProfile = (Model , imgDirectory = '') => catchAsync(async(req , res , next) => {
     const { image } = req.body;
+    console.log({ body : req.body })
     if(image) {
         const { fileName } = uploadImage(image , imgDirectory);
-        req.body.image = fileName;
+        req.body.image = `/${imgDirectory}/` + fileName;
     }
     const updateDoc = await Model.findByIdAndUpdate(req.user._id , req.body , {
         new : true , 
