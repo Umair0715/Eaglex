@@ -24,6 +24,7 @@ exports.createOffer = catchAsync(async(req , res , next) => {
 });
 
 exports.getAllOffers = hanlderFactory.getAll(Offer , 'company');
+exports.getTotalOffers = hanlderFactory.getTotal(Offer , 'company')
 exports.updateOffer = hanlderFactory.updateOne(Offer , imgDirectory);
 exports.getSingleOffer = hanlderFactory.getOne(Offer , 'company');
 exports.deleteOffer = hanlderFactory.deleteOne(Offer);

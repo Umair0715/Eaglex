@@ -44,6 +44,24 @@ exports.getAll = (Model, populateItems = '') => catchAsync(async(req , res , nex
     });
 });
 
+exports.getTotal = (Model, populateItems = '') => catchAsync(async(req , res , next) => {
+    const sort = req.query.sort || -1;
+    const keyword = req.query.keyword ?
+    {
+        name : {
+            $regex : req.query.keyword ,
+            $options : 'i'
+        }
+    } : {} ;    
+    const docCount = await Model.countDocuments();
+    const docs = await Model.find(keyword)
+    .populate(populateItems)
+    .sort({ createdAt : sort })
+    sendSuccessResponse(res , 200 , {
+        docs , docCount 
+    });
+});
+
 exports.getAllActive = (Model, populateItems = '') => catchAsync(async(req , res , next) => {
     const page = Number(req.query.page) || 1 ;
     const sort = req.query.sort || -1;

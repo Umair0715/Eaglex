@@ -68,10 +68,11 @@ exports.createInvest = catchAsync(async(req , res , next) => {
 
 const fetchInvests = async (req , res , query) => {
     try {
-        const pageSize = 10;
+        const pageSize = 30;
         const page = parseInt(req.query.page) || 1;
         let filter = {};
         const status = req.query.status;
+
         if(status === 'running') {
             filter = { status : 'running' }
         }else if (status === 'completed') {
@@ -114,7 +115,36 @@ exports.getSingleUserInvestments = catchAsync(async(req , res) => {
     await fetchInvests(req , res , { user : req.params.id });
 });
 exports.getMyInvestments = catchAsync(async(req , res) => {
-    await fetchInvests(req , res , { user : req.user._id });
+    let filter = {};
+    const status = req.query.status;
+
+    if(status === 'running') {
+        filter = { status : 'running' }
+    }else if (status === 'completed') {
+        filter = { status : 'completed' }
+    } else if (status === 'claimed') {
+        filter = { status : 'claimed' }
+    }
+    const docCount = await Invest.countDocuments({...filter , user : req.user._id })
+    const docs = await Invest.find({...filter , user : req.user._id })
+    .populate([
+        {
+            path : 'offer' ,
+            select : '-__v' , 
+            populate : {
+                path : 'company' ,
+                select : 'name'
+            }
+        } ,
+        {
+            path : 'user' ,
+            select : 'firstName lastName wallet phone isActive'
+        }
+    ])
+    .sort({ createdAt : -1 });
+    sendSuccessResponse(res , 200 , {
+        docs , docCount 
+    })
 });
 
 exports.getMyProgress = catchAsync(async(req , res) => {
