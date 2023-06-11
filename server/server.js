@@ -20,7 +20,19 @@ cron.schedule('0 * * * *', updateInvestmentProgress); // every hour
 
 connectDB();
 
-app.use(cors({ origin : '*' }));
+const allowedOrigins = ['https://admin.eaglexgroup.com' , 'http://eaglexgroup.com']; 
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+};
+
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json({ limit : '10mb' }));
@@ -47,17 +59,10 @@ app.use(require('./middlewares/errorHandler'));
 
 const { Server } = require('socket.io');
 
-// const options = {
-//     key: fs.readFileSync('eaglex.key', 'utf8').trim(),
-//     cert: fs.readFileSync('eaglex.crt', 'utf8').trim()
-// };
-  
-// const server = https.createServer(options, app);
-
 const httpServer = http.createServer(app);
 const io = new Server(httpServer , {
     cors : {
-        origin : ['http://127.0.0.1:3000' , 'http://127.0.0.1:3001' , 'http://localhost:3000' , 'http://localhost:3001' , 'http://203.161.32.12:3000' , 'http://203.161.32.12:3001']
+        origin : ['https://eaglexgroup.com' , 'http://admin.eaglexgroup.com']
     }
 });
 
