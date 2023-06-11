@@ -6,3 +6,6 @@ admin
 /admin 
 postman
 /postman
+.env
+/.env
+eaglex-postman-collections.zip
