@@ -32,19 +32,20 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     userWallet.totalBalance -= Number(amount);
     await userWallet.save();
 
-    const admin = await Admin.findOne({ isSuperAdmin : true })
-    const adminWallet = await AdminWallet.findOne({ admin : admin._id });
-    const settings = await Setting.findOne({});
-    const withdrawFee = (amount/100) * settings.platformFee;
-    adminWallet.totalBalance += withdrawFee;
-    await adminWallet.save();
+    // const admin = await Admin.findOne({ isSuperAdmin : true })
+    // const adminWallet = await AdminWallet.findOne({ admin : admin._id });
+    // const settings = await Setting.findOne({});
+    // const withdrawFee = (amount/100) * settings.platformFee;
+    // adminWallet.totalBalance += withdrawFee;
+    // await adminWallet.save();
 
     const newRequest = await Withdraw.create({
         user : req.user._id ,
         bankDetails ,
         withdrawAmount : amount ,
-        withdrawFee ,
-        receivedAmount : amount - withdrawFee
+        withdrawFee : 0,
+        receivedAmount : amount 
+        // receivedAmount : amount - withdrawFee
     });
 
     createWalletHistory(amount , '-' , userWallet._id , req.user._id , 'withdrawn');

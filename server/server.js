@@ -20,7 +20,10 @@ cron.schedule('0 * * * *', updateInvestmentProgress); // every hour
 
 connectDB();
 
-const allowedOrigins = ['https://admin.eaglexgroup.com' , 'http://eaglexgroup.com']; 
+// const allowedOrigins = ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com'];
+
+//dev
+const allowedOrigins = ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com' , 'http://localhost:3001' , 'http://localhost:3000' , "127.0.0.1:3001" , '127.0.0.1:3001'];  
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -62,7 +65,8 @@ const { Server } = require('socket.io');
 const httpServer = http.createServer(app);
 const io = new Server(httpServer , {
     cors : {
-        origin : ['https://eaglexgroup.com' , 'http://admin.eaglexgroup.com']
+        // origin : ['https://eaglexgroup.com' , 'https://admin.eaglexgroup.com']
+        origin : ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com' , 'http://localhost:3001' , 'http://localhost:3000' , "127.0.0.1:3001" , '127.0.0.1:3001']
     }
 });
 
