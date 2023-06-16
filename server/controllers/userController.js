@@ -288,10 +288,12 @@ exports.sendForgotPasswordOtp = catchAsync(async(req , res , next) => {
         return next(new AppError('This Phone number is not registered.' , 400))
     }
     const otp = generateReferralCode();
-    const url = `http://api.veevotech.com/sendsms?hash=${process.env.OTP_API_KEY}&receivenum=${phone}&sendernum=8583&textmessage=${otp}`;
+    const message = `Thank you for choosing Eaglex Group.
+    %0a%0aYour OTP for verification is ${otp}.
+    %0aPlease enter this code to complete the verification process. Thank you.`;
+    const url = `http://api.veevotech.com/sendsms?hash=${process.env.OTP_API_KEY}&receivenum=${phone}&sendernum=8583&textmessage=${message}`;
     try {
         const resp = await axios.get(url);
-        console.log({ otpResponse : resp })
         const currentDate = moment();
         user.resetPasswordToken = otp;
         user.resetPasswordTokenExpire = moment(currentDate).add(10, 'minutes');

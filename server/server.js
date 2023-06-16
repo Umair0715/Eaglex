@@ -56,6 +56,7 @@ app.use('/api/wallet-history' , require('./routes/walletHistoryRoutes'));
 app.use('/api/chat' , require('./routes/chatRoutes'));
 app.use('/api/message' , require('./routes/messageRoutes'));
 app.use('/api/wallet' , require('./routes/walletRoutes'));
+app.use('/api/notification' , require('./routes/notificationRoutes'));
 
 app.use(require('./middlewares/errorHandler'));
 
@@ -101,6 +102,10 @@ io.on('connection' , (socket) => {
     
     socket.on('stop-typing' , (roomId) => {
         socket.broadcast.to(roomId).emit('stop-typing')
+    });
+
+    socket.on('send-notification' , (message) => {
+        socket.broadcast.emit('new-notification' , message);
     });
 
     socket.on('leave-chat' , (chat) => {

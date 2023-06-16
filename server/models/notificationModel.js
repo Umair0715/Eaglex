@@ -9,10 +9,6 @@ const notificationSchema = new mongoose.Schema({
         type : String ,
         required : [true , 'Description is required']
     } ,
-    image : {
-        type : String ,
-        required : [true , 'Image is required.']
-    } ,
     isActive : {
         type : Boolean ,
         default : true 
