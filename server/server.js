@@ -38,7 +38,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(morgan('dev'));
 app.use(cookieParser());
-app.use(express.json({ limit : '10mb' }));
+app.use(express.json({ limit : '15mb' }));
 app.use(express.static(path.join(__dirname , 'uploads')));
 
 app.use('/api/user' , require('./routes/userRoutes'));
