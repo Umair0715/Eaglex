@@ -85,7 +85,6 @@ const removeFromChats = (chat) => {
 }
 
 io.on('connection' , (socket) => {
-    console.log('someone connected' , socket.id);
 
     socket.on('join-chat' , (chat) => {
         addToChats(chat);

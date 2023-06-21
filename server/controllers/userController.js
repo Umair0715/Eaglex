@@ -168,20 +168,29 @@ async function getTeamMembers(user, currentLevel, maxLevel) {
 }
 
 const getMembersTotalDeposit = async (memberIds) => {
-    const result = await Deposit.aggregate([
-        {
-            $match: {
-                user: { $in: memberIds }
-            }
-        },
-        {
-            $group: {
-                _id: null,
-                totalDeposit: { $sum: '$amount' }
-            }
+    // const result = await Deposit.aggregate([
+    //     {
+    //         $match: {
+    //             user: { $in: memberIds } , status : 'approved'
+    //         }
+    //     },
+    //     {
+    //         $group: {
+    //             _id: null,
+    //             totalDeposit: { $sum: '$amount' }
+    //         }
+    //     }
+    // ]);
+    // return result[0]?.totalDeposit || 0
+    let totalDeposit = 0;
+    for (let memberId of memberIds) {
+        const deposits = await Deposit.find({ user : memberId , status : 'approved'});
+        if(deposits.length === 0 ) continue;
+        for (let deposit of deposits) {
+            totalDeposit += deposit.transferAmount;
         }
-    ]);
-    return result[0]?.totalDeposit || 0
+    }
+    return totalDeposit;
 }
 
 exports.getMyTeamDetails = catchAsync(async(req , res , next) => {

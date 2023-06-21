@@ -29,12 +29,38 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     if(userWallet.totalBalance < amount) {
         return next(new AppError('You have insufficient balance to withdraw this amount.' , 400))
     }
+    const settings = await Setting.findOne({});
+    if(amount < settings.minWithdraw){
+        return next(new AppError(`Minimum Withdraw amount is ${settings.minWithdraw}` , 400))
+    }
+
+    // Set the time zone to Pakistan
+    const moment = require('moment-timezone');
+
+    const currentTime = moment().tz('Asia/Karachi');
+    const startTime = moment().tz('Asia/Karachi').set({ hour: 10, minute: 0, second: 0, millisecond: 0 });
+    const endTime = moment().tz('Asia/Karachi').set({ hour: 17, minute: 0, second: 0, millisecond: 0 });
+
+    if (currentTime.isBefore(startTime) || currentTime.isAfter(endTime)) {
+        return next(new AppError('Withdrawals can only be made between 10:00 AM to 5:00 PM Pakistan time.', 400));
+    }
+
+    // Check if the user has already made a withdrawal request today
+    const today = moment().startOf('day');
+    const userWithdrawals = await Withdraw.find({
+        user: req.user._id,
+        createdAt: { $gte: today.toDate() },
+    });
+
+    if (userWithdrawals.length > 0) {
+        return next(new AppError('You can create only one withdrawal request per day. Please try again tomorrow.', 400));
+    }
+
     userWallet.totalBalance -= Number(amount);
     await userWallet.save();
 
     // const admin = await Admin.findOne({ isSuperAdmin : true })
     // const adminWallet = await AdminWallet.findOne({ admin : admin._id });
-    // const settings = await Setting.findOne({});
     // const withdrawFee = (amount/100) * settings.platformFee;
     // adminWallet.totalBalance += withdrawFee;
     // await adminWallet.save();
@@ -43,8 +69,9 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
         user : req.user._id ,
         bankDetails ,
         withdrawAmount : amount ,
-        withdrawFee : 0,
-        receivedAmount : amount 
+        withdrawFee : 0 ,
+        receivedAmount : amount ,
+        username : req.user.firstName + ' ' + req.user.lastName 
         // receivedAmount : amount - withdrawFee
     });
 
@@ -69,8 +96,17 @@ const fetchWithdrawRequests = async (req , res , query) => {
         }else if (status === 'declined'){
             filter = { status : 'declined' }
         }
-        const docCount = await Withdraw.countDocuments({...filter , ...query})
-        const docs = await Withdraw.find({...filter , ...query})
+        const keyword = req.query.keyword ?
+        {
+            username : {
+                $regex : req.query.keyword ,
+                $options : 'i'
+            }
+        } : {} ;  
+        const docCount = await Withdraw.countDocuments({
+            ...keyword , ...filter , ...query
+        });
+        const docs = await Withdraw.find({...keyword , ...filter , ...query})
         .populate([
             {
                 path : 'bankDetails' ,

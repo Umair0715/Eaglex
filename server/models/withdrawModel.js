@@ -35,6 +35,10 @@ const withdrawSchema = new mongoose.Schema({
     receivedAmount : {
         type : Number ,
         required : [true , 'Received amount is required.']
+    } , 
+    username : {
+        type : String ,
+        default : null 
     }
 } , { timestamps : true });
 

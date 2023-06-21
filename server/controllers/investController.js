@@ -39,6 +39,23 @@ exports.createInvest = catchAsync(async(req , res , next) => {
     if(investExist) {
         return next(new AppError('You already invested in this offer. to re-invest please wait until this offer is completed.' , 400))
     }
+    if(offer.timePeriod === 1) {
+        const isInvested = await Invest.findOne({ 
+            user : req.user._id , 
+            offer : offer._id , 
+        });
+        if(isInvested) {
+            return next(new AppError(`Please note that you can invest in the ${offer.name} offer only one time. To proceed with another investment, please select a different offer.`, 400))
+        }
+    }else if (offer.timePeriod === 3) {
+        const investsCount = await Invest.countDocuments({
+            user : req.user._id , 
+            offer : offer._id , 
+        });
+        if(investsCount >= 2) {
+            return next(new AppError(`Please note that you can invest in the ${offer.name} offer only two times. To proceed with another investment, please select a different offer.`, 400))
+        }
+    }
     userWallet.totalBalance -= amount;
     const newWallet = await userWallet.save();
     const totalOfferProfit = offer.profit * offer.timePeriod;
