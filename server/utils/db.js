@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 const DB = process.env.DATABASE_URI;
+// const DB = 'mongodb://203.161.32.12/eaglex'
+// const DB = 'mongodb://203.161.32.12:27017';
 
 const connectDB = () => {
    mongoose.connect(DB , {

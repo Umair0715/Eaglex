@@ -114,7 +114,7 @@ exports.updateDepositRequest = catchAsync(async(req , res ,next) => {
 
         createWalletHistory(req.body.transferAmount , '+' , userWallet._id , request.user._id , 'Deposit amount');
 
-        if(request.user.referrer){
+        if(request.user.referrer) {
             sendTeamBonus(request.user , req.body.transferAmount);
         }
 

@@ -80,6 +80,9 @@ exports.getMyChat = catchAsync(async( req , res , next) => {
 });
 
 exports.getAdminChats = catchAsync(async( req , res , next) => {
+    const page = Number(req.query.page) || 1 ;
+    const pageSize = 15;
+
     const keyword = req.query.keyword ? {
         chatName : {
             $regex : req.query.keyword ,
@@ -88,6 +91,7 @@ exports.getAdminChats = catchAsync(async( req , res , next) => {
     } 
     : {};
     
+    const docCount = await Chat.countDocuments();
     let chats = await Chat.find({...keyword , admin : req.user._id })
     .populate('user' , 'firstName lastName phone image')
     .populate({ 
@@ -97,10 +101,17 @@ exports.getAdminChats = catchAsync(async( req , res , next) => {
             select : 'firstName lastName phone image'
         }
     })
-    .populate('admin' , 'firstName lastName phone');
-    
+    .populate('admin' , 'firstName lastName phone')
+    .skip(pageSize * (page - 1))
+    .limit(pageSize)
+    .sort({ updatedAt : -1 })
 
-    sendSuccessResponse(res , 200 , { docs : chats });
+    const pages = Math.ceil(docCount/pageSize);
+    console.log({ page , pages , docCount })
+    sendSuccessResponse(res , 200 , { 
+        docs : chats ,
+        page , pages , docCount  
+    });
 });
 
 

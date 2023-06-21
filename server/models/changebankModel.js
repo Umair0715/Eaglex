@@ -32,8 +32,7 @@ const changeBankSchema = new mongoose.Schema({
         type : String ,
         default : null
     }
-
-});
+} , { timestamps : true });
 
 const moment = require('moment-timezone')
 changeBankSchema.pre('save', function (next) {

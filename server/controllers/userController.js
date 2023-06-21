@@ -13,7 +13,8 @@ const handlerFactory = require('./factories/handlerFactory');
 const Offer = require('../models/offerModel');
 const Setting = require('../models/settingsModel');
 const { default: axios } = require('axios');
-const moment = require('moment')
+const moment = require('moment');
+const Deposit = require('../models/depositModel')
 
 exports.register = catchAsync(async(req , res , next) => {
     const { phone } = req.body;
@@ -166,11 +167,38 @@ async function getTeamMembers(user, currentLevel, maxLevel) {
     return nestedTeamMembers;
 }
 
+const getMembersTotalDeposit = async (memberIds) => {
+    const result = await Deposit.aggregate([
+        {
+            $match: {
+                user: { $in: memberIds }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalDeposit: { $sum: '$amount' }
+            }
+        }
+    ]);
+    return result[0]?.totalDeposit || 0
+}
+
 exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
     const levelOneMembers = await User.find({ referrer: req.user.referralCode }).exec();
     const levelTwoMembers = await User.find({ referrer: { $in: levelOneMembers.map(member => member.referralCode ) } }).exec();
     const levelThreeMembers = await User.find({ referrer: { $in: levelTwoMembers.map(member => member.referralCode ) } }).exec();
     const settings = await Setting.findOne({});
+
+    const levelOneMemberIds = levelOneMembers.map(member => member._id);
+    const levelTwoMemberIds = levelTwoMembers.map(member => member._id);
+    const levelThreeMemberIds = levelThreeMembers.map(member => member._id);
+
+    // Calculate Total Deposit
+    const levelOneMembersDeposit = await getMembersTotalDeposit(levelOneMemberIds)
+    const levelTwoMembersDeposit = await getMembersTotalDeposit(levelTwoMemberIds)
+    const levelThreeMembersDeposit = await getMembersTotalDeposit(levelThreeMemberIds);
+    const totalTeamDeposit = levelOneMembersDeposit + levelTwoMembersDeposit + levelThreeMembersDeposit; 
 
     const totalTeamMembers = levelOneMembers.length + levelTwoMembers.length + levelThreeMembers.length;
 
@@ -183,14 +211,18 @@ exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
 
     sendSuccessResponse(res , 200 , {
         totalInvestAmount ,
-        totalTeamMembers,
+        totalTeamMembers ,
         levelOneMembers : levelOneMembers.length ,
         levelTwoMembers : levelTwoMembers.length ,
         levelThreeMembers : levelThreeMembers.length ,
         levelOneCommission : settings.levelOneProfit ,
         levelTwoCommission : settings.levelTwoProfit ,
         levelThreeCommission : settings.levelThreeProfit ,
-    })
+        levelOneMembersDeposit , 
+        levelTwoMembersDeposit ,
+        levelThreeMembersDeposit ,
+        totalTeamDeposit
+    });
 });
 
 exports.getDashboardDetails = catchAsync(async(req , res , next) => {
@@ -217,7 +249,19 @@ exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
     .select('firstName lastName phone isActive createdAt referrer referralCode')
     .exec();
 
+    // Calculate Level Members and their deposit
+    const levelOneMemberIds = levelOneMembers.map(member => member._id);
+    const levelTwoMemberIds = levelTwoMembers.map(member => member._id);
+    const levelThreeMemberIds = levelThreeMembers.map(member => member._id);
+
+    // Calculate Total Deposit
+    const levelOneMembersDeposit = await getMembersTotalDeposit(levelOneMemberIds)
+    const levelTwoMembersDeposit = await getMembersTotalDeposit(levelTwoMemberIds)
+    const levelThreeMembersDeposit = await getMembersTotalDeposit(levelThreeMemberIds);
+    const totalTeamDeposit = levelOneMembersDeposit + levelTwoMembersDeposit + levelThreeMembersDeposit;
+
     
+    // Team Members with filter
     let teamMembers = [];
     const level  = parseInt(req.query.level);
     if (level === 1) {
@@ -243,7 +287,11 @@ exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
         totalTeamMembers ,
         levelOneMembersCount ,
         levelTwoMembersCount , 
-        levelThreeMembersCount
+        levelThreeMembersCount ,
+        levelOneMembersDeposit ,
+        levelTwoMembersDeposit ,
+        levelThreeMembersDeposit ,
+        totalTeamDeposit
     });
 });
 
@@ -340,4 +388,45 @@ exports.resetPassword = catchAsync(async(req , res , next) => {
     sendSuccessResponse(res , 200 , {
         message : 'Password changed successfully.' ,
     });
-})
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+// exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
+//     const levelOneMembers = await User.find({ referrer: req.user.referralCode }).exec();
+//     const levelTwoMembers = await User.find({ referrer: { $in: levelOneMembers.map(member => member.referralCode ) } }).exec();
+//     const levelThreeMembers = await User.find({ referrer: { $in: levelTwoMembers.map(member => member.referralCode ) } }).exec();
+//     const settings = await Setting.findOne({});
+
+    
+
+//     const totalTeamMembers = levelOneMembers.length + levelTwoMembers.length + levelThreeMembers.length;
+
+//     // Calculate totalInvestAmount
+//     const levelOneInvestAmount = levelOneMembers.reduce((total, member) => total + member.totalInvestAmount, 0);
+//     const levelTwoInvestAmount = levelTwoMembers.reduce((total, member) => total + member.totalInvestAmount, 0);
+//     const levelThreeInvestAmount = levelThreeMembers.reduce((total, member) => total + member.totalInvestAmount , 0);
+
+//     const totalInvestAmount = levelOneInvestAmount + levelTwoInvestAmount + levelThreeInvestAmount;
+
+//     sendSuccessResponse(res , 200 , {
+//         totalInvestAmount ,
+//         totalTeamMembers,
+//         levelOneMembers : levelOneMembers.length ,
+//         levelTwoMembers : levelTwoMembers.length ,
+//         levelThreeMembers : levelThreeMembers.length ,
+//         levelOneCommission : settings.levelOneProfit ,
+//         levelTwoCommission : settings.levelTwoProfit ,
+//         levelThreeCommission : settings.levelThreeProfit ,
+//     })
+// });

@@ -68,7 +68,7 @@ exports.createInvest = catchAsync(async(req , res , next) => {
 
 const fetchInvests = async (req , res , query) => {
     try {
-        const pageSize = 30;
+        const pageSize = 20;
         const page = parseInt(req.query.page) || 1;
         let filter = {};
         const status = req.query.status;
