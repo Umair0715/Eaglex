@@ -92,7 +92,7 @@ exports.getAdminChats = catchAsync(async( req , res , next) => {
     : {};
     
     const docCount = await Chat.countDocuments();
-    let chats = await Chat.find({...keyword , admin : req.user._id })
+    let chats = await Chat.find({...keyword , admin : req.user._id , latestMessage: { $exists: true } })
     .populate('user' , 'firstName lastName phone image')
     .populate({ 
         path : 'latestMessage',

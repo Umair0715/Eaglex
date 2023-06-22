@@ -195,6 +195,12 @@ exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
     const levelThreeMembersDeposit = await getMembersTotalDeposit(levelThreeMemberIds);
     const totalTeamDeposit = levelOneMembersDeposit + levelTwoMembersDeposit + levelThreeMembersDeposit; 
 
+    // calculate user commission
+    const levelOneCommission = (levelOneMembersDeposit / 100) * settings.levelOneProfit; 
+    const levelTwoCommission = (levelTwoMembersDeposit / 100) * settings.levelTwoProfit;
+    const levelThreeCommission = (levelThreeMembersDeposit / 100) * settings.levelThreeProfit;
+    const totalTeamCommission = levelOneCommission + levelTwoCommission + levelThreeCommission;
+
     const totalTeamMembers = levelOneMembers.length + levelTwoMembers.length + levelThreeMembers.length;
 
     // Calculate totalInvestAmount
@@ -216,7 +222,11 @@ exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
         levelOneMembersDeposit , 
         levelTwoMembersDeposit ,
         levelThreeMembersDeposit ,
-        totalTeamDeposit
+        totalTeamDeposit , 
+        levelOneCommissionAmount : levelOneCommission.toFixed(2) ,
+        levelTwoCommissionAmount : levelTwoCommission.toFixed(2) ,
+        levelThreeCommissionAmount : levelThreeCommission.toFixed(2) ,
+        totalTeamCommissionAmount : totalTeamCommission.toFixed(2)
     });
 });
 
