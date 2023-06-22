@@ -96,6 +96,7 @@ const fetchWithdrawRequests = async (req , res , query) => {
         }else if (status === 'declined'){
             filter = { status : 'declined' }
         }
+
         const keyword = req.query.keyword ?
         {
             username : {
@@ -120,8 +121,6 @@ const fetchWithdrawRequests = async (req , res , query) => {
         .limit(pageSize)
         .skip(pageSize * (page - 1))
         .sort({ createdAt : -1 });
-
-        console.log({ docs })
 
         const pages = Math.ceil(docCount/pageSize);
         sendSuccessResponse(res , 200 , {

@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema({
     resetPasswordTokenExpire : {
         type : Date , 
         default : null 
+    } , 
+    teamCommission : {
+        type : Number ,
+        default : 0
     }
 
 } , { timestamps : true });

@@ -28,6 +28,9 @@ const sendBonusToReferrer = async (referrer, depositAmount, level, from) => {
         const referrerWallet = await Wallet.findOne({ user: referrer._id });
         referrerWallet.totalBalance += referrerProfit;
         await referrerWallet.save();
+        referrer.totalProfit += referrerProfit;
+        referrer.teamCommission += referrerProfit;
+        referrer.save();
 
         createWalletHistory(referrerProfit , '+' , referrerWallet._id , referrer._id , `Profit from level ${level} team member. `)
     }

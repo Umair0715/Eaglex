@@ -168,20 +168,6 @@ async function getTeamMembers(user, currentLevel, maxLevel) {
 }
 
 const getMembersTotalDeposit = async (memberIds) => {
-    // const result = await Deposit.aggregate([
-    //     {
-    //         $match: {
-    //             user: { $in: memberIds } , status : 'approved'
-    //         }
-    //     },
-    //     {
-    //         $group: {
-    //             _id: null,
-    //             totalDeposit: { $sum: '$amount' }
-    //         }
-    //     }
-    // ]);
-    // return result[0]?.totalDeposit || 0
     let totalDeposit = 0;
     for (let memberId of memberIds) {
         const deposits = await Deposit.find({ user : memberId , status : 'approved'});
@@ -269,6 +255,11 @@ exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
     const levelThreeMembersDeposit = await getMembersTotalDeposit(levelThreeMemberIds);
     const totalTeamDeposit = levelOneMembersDeposit + levelTwoMembersDeposit + levelThreeMembersDeposit;
 
+    const settings = await Setting.findOne({});
+    const levelOneCommission = (levelOneMembersDeposit / 100) * settings.levelOneProfit; 
+    const levelTwoCommission = (levelTwoMembersDeposit / 100) * settings.levelTwoProfit;
+    const levelThreeCommission = (levelThreeMembersDeposit / 100) * settings.levelThreeProfit;
+    const totalTeamCommission = levelOneCommission + levelTwoCommission + levelThreeCommission;
     
     // Team Members with filter
     let teamMembers = [];
@@ -300,8 +291,12 @@ exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
         levelOneMembersDeposit ,
         levelTwoMembersDeposit ,
         levelThreeMembersDeposit ,
-        totalTeamDeposit
-    });
+        totalTeamDeposit ,
+        levelOneCommission : levelOneCommission.toFixed(2) ,
+        levelTwoCommission : levelTwoCommission.toFixed(2) ,
+        levelThreeCommission : levelThreeCommission.toFixed(2) ,
+        totalTeamCommission : totalTeamCommission.toFixed(2)
+    }); 
 });
 
 exports.searchUser = catchAsync(async(req , res , next) => {

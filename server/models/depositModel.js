@@ -48,6 +48,10 @@ const depositSchema = new mongoose.Schema({
     transferAmount : {
         type : Number ,
         default : null 
+    } , 
+    username : {
+        type : String ,
+        default : null 
     }
 }, { timestamps : true });
 

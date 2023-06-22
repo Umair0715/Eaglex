@@ -20,7 +20,11 @@ exports.createDepositRequest = catchAsync(async(req , res , next) => {
     }
     const { fileName } = uploadImage(proof , imgDirectory);
     req.body.proof = `/${imgDirectory}/` + fileName;
-    const newRequest = await Deposit.create({...req.body , user : req.user._id });
+    const newRequest = await Deposit.create({
+        ...req.body , 
+        user : req.user._id ,
+        username : req.user.firstName + ' ' + req.user.lastName
+    });
     sendSuccessResponse(res , 201 , {
         message : 'Deposit request created successfully.' ,
         doc : newRequest
@@ -45,8 +49,16 @@ const fetchDeposits = async (req , res , query) => {
     } else if (status === 'pending') {
         filter = { status : 'pending' }
     }
-    const docCount = await Deposit.countDocuments({...filter , ...query});
-    const docs = await Deposit.find({...filter , ...query})
+    const keyword = req.query.keyword ?
+        {
+            username : {
+                $regex : req.query.keyword ,
+                $options : 'i'
+            }
+        } : {} ;
+
+    const docCount = await Deposit.countDocuments({...keyword , ...filter , ...query});
+    const docs = await Deposit.find({...keyword , ...filter , ...query})
     .populate(populateObj)
     .skip(pageSize * (page - 1))
     .limit(pageSize)
