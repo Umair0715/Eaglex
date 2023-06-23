@@ -97,6 +97,25 @@ const fetchWithdrawRequests = async (req , res , query) => {
             filter = { status : 'declined' }
         }
 
+        const range = req.query.range;
+
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+        const end = new Date();
+        end.setHours(23, 59, 59, 999);
+        if (range === 'today') {
+            filter = {...filter , createdAt: { $gte: start, $lte: end } };
+        } else if (range === 'week') {
+            start.setDate(start.getDate() - 7);
+            filter = {...filter , createdAt: { $gte: start, $lte: end } };
+        }else if (range === 'yesterday') {
+            const yesterdayStart = new Date(start);
+            yesterdayStart.setDate(start.getDate() - 1);
+            const yesterdayEnd = new Date(end);
+            yesterdayEnd.setDate(end.getDate() - 1);
+            filter = { ...filter, createdAt: { $gte: yesterdayStart, $lte: yesterdayEnd } };
+        }
+
         const keyword = req.query.keyword ?
         {
             username : {

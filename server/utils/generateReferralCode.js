@@ -1,9 +1,13 @@
-var ID = require("nodejs-unique-numeric-id-generator")
+// var ID = require("nodejs-unique-numeric-id-generator")
+const User = require('../models/userModel');
+const { nanoid } = require('nanoid')
 
-function generateReferralCode() {
-    let code = ID.generate(new Date().toJSON());
-    if (code.toString().length < 6) {
-        return generateReferralCode();
+
+async function generateReferralCode() {
+    const code = nanoid()
+    const userExist = await User.findOne({ referralCode : code });
+    if(userExist) {
+        return await generateReferralCode();
     }
     return code;
 }

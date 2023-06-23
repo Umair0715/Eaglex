@@ -62,6 +62,7 @@ app.use(require('./middlewares/errorHandler'));
 
 
 const { Server } = require('socket.io');
+const generateReferralCode = require('./utils/generateReferralCode');
 
 const httpServer = http.createServer(app);
 const io = new Server(httpServer , {
@@ -71,6 +72,7 @@ const io = new Server(httpServer , {
     }
 });
 
+
 let chats = [];
 
 const addToChats = (chat) => {
@@ -79,9 +81,9 @@ const addToChats = (chat) => {
     }
 }
 
+
 const removeFromChats = (chat) => {
     chats = chats.filter(ch => ch._id !== chat._id );
-    console.log({ all : chats })
 }
 
 io.on('connection' , (socket) => {
@@ -111,37 +113,6 @@ io.on('connection' , (socket) => {
         removeFromChats(chat);
     })
 });
-
-// const deleteInvestRecordsWithDeletedOffers = async () => {
-//     try {
-//         const Invest = require('./models/investModel');
-//         const Offer = require('./models/offerModel');
-//       // Find all invest records
-//         const investRecords = await Invest.find({});
-  
-//       // Array to store deleted offer IDs
-//         const deletedOfferIds = [];
-  
-//       // Iterate through each invest record
-//         for (const record of investRecords) {
-//             // Check if the offer exists
-//             const offerExists = await Offer.exists({ _id: record.offer });
-    
-//             // If the offer doesn't exist, add its ID to the deletedOfferIds array
-//             if (!offerExists) {
-//                 deletedOfferIds.push(record.offer);
-//             }
-//         }
-  
-//         // Delete invest records with deleted offer IDs
-//         // await Invest.deleteMany({ offer: { $in: deletedOfferIds } });
-//         console.log({ deletedOfferIds })
-//         // console.log('Invest records with deleted offers have been deleted successfully.');
-//     } catch (error) {
-//         console.error('Error deleting invest records:', error);
-//     }
-// };
-// deleteInvestRecordsWithDeletedOffers();
 
 const PORT = process.env.PORT || 5500;
 httpServer.listen(PORT , () => console.log(`server is listening on port ${PORT}`))

@@ -26,7 +26,7 @@ exports.register = catchAsync(async(req , res , next) => {
     if(userExist){
         return next(new AppError('Phone no already taken. Please try another.' , 400));
     }
-    const referralCode = 'EX-' + generateReferralCode();
+    const referralCode = 'EX-' + await generateReferralCode();
     if(req.body.referrer){
         const referrerExist = await User.findOne({ referralCode : req.body.referrer });
         if(!referrerExist) {
@@ -62,18 +62,19 @@ exports.getAllUsers = catchAsync(async(req , res , next) => {
     if(req.query.pageSize && req.query.pageSize > 40){
         return next(new AppError('pageSize should be less than or equal to 25' , 400));
     }
+
     const keyword = req.query.keyword ?
     {
         $or : [
             {
                 firstName : {
-                    $regex : req.query.keyword ,
+                    $regex : req.query.keyword.split(' ')[0] || req.query.keyword,
                     $options : 'i'
                 } 
             } ,
             {
                 lastName : {
-                    $regex : req.query.keyword ,
+                    $regex : req.query.keyword.split(' ')[1] || req.query.keyword ,
                     $options : 'i'
                 }
             }
