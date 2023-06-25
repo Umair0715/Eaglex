@@ -12,11 +12,16 @@ const updateInvestmentProgress = require('./croneJobs/updateInvestProgress');
 const https = require('https');
 const http = require('http')
 const fs = require('fs');
+const addExtraBonus = require('./croneJobs/addExtraBonus');
 
 
 cron.schedule('0 * * * *', updateInvestmentProgress); // every hour 
 // cron.schedule('*/1 * * * * *', updateInvestmentProgress); // every second
 // cron.schedule('* * * * *', updateInvestmentProgress); // every minute
+
+cron.schedule('30 4 * * *', addExtraBonus , {
+    timezone: 'Asia/Karachi' // Set the timezone to Pakistan
+});
 
 connectDB();
 
@@ -62,7 +67,7 @@ app.use(require('./middlewares/errorHandler'));
 
 
 const { Server } = require('socket.io');
-const generateReferralCode = require('./utils/generateReferralCode');
+
 
 const httpServer = http.createServer(app);
 const io = new Server(httpServer , {
@@ -80,7 +85,6 @@ const addToChats = (chat) => {
         chats.push(chat);
     }
 }
-
 
 const removeFromChats = (chat) => {
     chats = chats.filter(ch => ch._id !== chat._id );
@@ -116,3 +120,24 @@ io.on('connection' , (socket) => {
 
 const PORT = process.env.PORT || 5500;
 httpServer.listen(PORT , () => console.log(`server is listening on port ${PORT}`))
+
+
+// const User = require('./models/userModel');
+// const Deposit = require('./models/depositModel');
+
+// const calcUserDeposit = async () => {
+//     try {
+//         const users = await User.find({});
+//         for (let user of users) {
+//             const deposits = await Deposit.find({ user : user._id , status : 'approved' });
+//             if(deposits.length > 0 ) {
+//                 const totalDepositAmount = deposits.reduce((acc , i) => acc + i.transferAmount , 0);
+//                 user.totalDepositAmount = Number(totalDepositAmount);
+//                 await user.save()
+//             }
+//         }
+//     } catch (error) {
+//         console.log({ calDepositError : error })
+//     }
+// }
+// calcUserDeposit();

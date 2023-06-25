@@ -181,16 +181,25 @@ const getMembersTotalDeposit = async (memberIds) => {
 }
 
 exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
-    const levelOneMembers = await User.find({ referrer: req.user.referralCode }).exec();
-    const levelTwoMembers = await User.find({ referrer: { $in: levelOneMembers.map(member => member.referralCode ) } }).exec();
-    const levelThreeMembers = await User.find({ referrer: { $in: levelTwoMembers.map(member => member.referralCode ) } }).exec();
-    const settings = await Setting.findOne({});
+    let levelOneMembers = await User.find({ referrer: req.user.referralCode })
+    .select('-password -__v -resetPasswordToken -resetPasswordTokenExpire -updatedAt -isActive')
+    .exec();
 
+    let levelTwoMembers = await User.find({ referrer: { $in: levelOneMembers.map(member => member.referralCode ) } })
+    .select('-password -__v -resetPasswordToken -resetPasswordTokenExpire -updatedAt -isActive')
+    .exec();
+
+    let levelThreeMembers = await User.find({ referrer: { $in: levelTwoMembers.map(member => member.referralCode ) } })
+    .select('-password -__v -resetPasswordToken -resetPasswordTokenExpire -updatedAt -isActive')
+    .exec();
+    
+    const settings = await Setting.findOne({});
+    
+    // Calculate Total Deposit
     const levelOneMemberIds = levelOneMembers.map(member => member._id);
     const levelTwoMemberIds = levelTwoMembers.map(member => member._id);
     const levelThreeMemberIds = levelThreeMembers.map(member => member._id);
 
-    // Calculate Total Deposit
     const levelOneMembersDeposit = await getMembersTotalDeposit(levelOneMemberIds)
     const levelTwoMembersDeposit = await getMembersTotalDeposit(levelTwoMemberIds)
     const levelThreeMembersDeposit = await getMembersTotalDeposit(levelThreeMemberIds);
@@ -211,6 +220,22 @@ exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
 
     const totalInvestAmount = levelOneInvestAmount + levelTwoInvestAmount + levelThreeInvestAmount;
 
+
+    // Team Members with filter
+    let teamMembers = [];
+    const level  = parseInt(req.query.level);
+    if (level === 1) {
+        levelOneMembers.forEach(item => teamMembers.push({...item._doc , level : 1 }))
+    }else if (level === 2) {
+        levelTwoMembers.forEach(item => teamMembers.push({...item._doc , level : 2 }))
+    }else if (level === 3){
+        levelThreeMembers.forEach(item => teamMembers.push({...item._doc , level : 3 })) 
+    }else {
+        levelOneMembers.forEach(item => teamMembers.push({...item._doc , level : 1 }))
+        levelTwoMembers.forEach(item => teamMembers.push({...item._doc , level : 2 }))
+        levelThreeMembers.forEach(item => teamMembers.push({...item._doc , level : 3 })) 
+    }
+
     sendSuccessResponse(res , 200 , {
         totalInvestAmount ,
         totalTeamMembers ,
@@ -227,7 +252,8 @@ exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
         levelOneCommissionAmount : levelOneCommission.toFixed(2) ,
         levelTwoCommissionAmount : levelTwoCommission.toFixed(2) ,
         levelThreeCommissionAmount : levelThreeCommission.toFixed(2) ,
-        totalTeamCommissionAmount : totalTeamCommission.toFixed(2)
+        totalTeamCommissionAmount : totalTeamCommission.toFixed(2) , 
+        teamMembers
     });
 });
 
@@ -405,43 +431,3 @@ exports.resetPassword = catchAsync(async(req , res , next) => {
     });
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-// exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
-//     const levelOneMembers = await User.find({ referrer: req.user.referralCode }).exec();
-//     const levelTwoMembers = await User.find({ referrer: { $in: levelOneMembers.map(member => member.referralCode ) } }).exec();
-//     const levelThreeMembers = await User.find({ referrer: { $in: levelTwoMembers.map(member => member.referralCode ) } }).exec();
-//     const settings = await Setting.findOne({});
-
-    
-
-//     const totalTeamMembers = levelOneMembers.length + levelTwoMembers.length + levelThreeMembers.length;
-
-//     // Calculate totalInvestAmount
-//     const levelOneInvestAmount = levelOneMembers.reduce((total, member) => total + member.totalInvestAmount, 0);
-//     const levelTwoInvestAmount = levelTwoMembers.reduce((total, member) => total + member.totalInvestAmount, 0);
-//     const levelThreeInvestAmount = levelThreeMembers.reduce((total, member) => total + member.totalInvestAmount , 0);
-
-//     const totalInvestAmount = levelOneInvestAmount + levelTwoInvestAmount + levelThreeInvestAmount;
-
-//     sendSuccessResponse(res , 200 , {
-//         totalInvestAmount ,
-//         totalTeamMembers,
-//         levelOneMembers : levelOneMembers.length ,
-//         levelTwoMembers : levelTwoMembers.length ,
-//         levelThreeMembers : levelThreeMembers.length ,
-//         levelOneCommission : settings.levelOneProfit ,
-//         levelTwoCommission : settings.levelTwoProfit ,
-//         levelThreeCommission : settings.levelThreeProfit ,
-//     })
-// });

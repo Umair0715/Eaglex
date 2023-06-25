@@ -86,6 +86,7 @@ exports.updateDepositRequest = catchAsync(async(req , res ,next) => {
     const { id } = req.params;
     const request = await Deposit.findById(id)
     .populate(populateObj);
+    const user = await User.findById(request.user._id);
     if(!request) {
         return next(new AppError('Invalid id. Document not found.' , 404))
     }
@@ -99,6 +100,9 @@ exports.updateDepositRequest = catchAsync(async(req , res ,next) => {
         }).populate(populateObj);
         
         createWalletHistory(request.transferAmount , '-' , userWallet._id , request.user._id , `Detucted by an admin`);
+
+        user.totalDepositAmount -= request.transferAmount;
+        user.save();
 
         return sendSuccessResponse(res , 200 , {
             message : 'Request updated successfully.' ,
@@ -126,9 +130,13 @@ exports.updateDepositRequest = catchAsync(async(req , res ,next) => {
 
         createWalletHistory(req.body.transferAmount , '+' , userWallet._id , request.user._id , 'Deposit amount');
 
+
         if(request.user.referrer) {
             sendTeamBonus(request.user , req.body.transferAmount);
         }
+
+        user.totalDepositAmount += Number(req.body.transferAmount);
+        user.save();
 
         return sendSuccessResponse(res , 200 , {
             message : 'Request Approved successfully.' ,

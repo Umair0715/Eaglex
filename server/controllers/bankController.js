@@ -23,7 +23,7 @@ exports.addBankAccount = catchAsync(async(req , res , next) => {
 });
 
 exports.getMyBankAccount = catchAsync(async(req , res) => {
-    const bank = await Bank.findOne({ user : req.user._id , isActive : true  });
+    const bank = await Bank.findOne({ user : req.user._id  });
     sendSuccessResponse(res , 200 , { 
         doc : bank 
     })

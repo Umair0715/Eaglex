@@ -68,7 +68,8 @@ exports.createInvest = catchAsync(async(req , res , next) => {
         returnProfitAmount : (amount / 100 ) * totalOfferProfit ,
         user : req.user._id ,
         startDate : moment().tz('Asia/Karachi') ,
-        endDate : moment().add(offer.timePeriod, 'days').tz('Asia/Karachi')
+        // endDate : moment().add(offer.timePeriod, 'days').tz('Asia/Karachi')
+        endDate : moment().add(offer.timePeriod, 'days').add(1, 'hours').tz('Asia/Karachi')
     });
 
     const user = await User.findById(req.user._id);

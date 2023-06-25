@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema({
         type : Number ,
         default : null
     } ,
+    totalDepositAmount : {
+        type : Number ,
+        default : null
+    } ,
     resetPasswordToken : {
         type : String ,
         default : null 
@@ -62,6 +66,14 @@ const userSchema = new mongoose.Schema({
         default : null 
     } , 
     teamCommission : {
+        type : Number ,
+        default : 0
+    } , 
+    depositMilestone : {
+        type : Number ,
+        default : 0
+    } ,
+    extraCommission : {
         type : Number ,
         default : 0
     }
