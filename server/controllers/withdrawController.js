@@ -21,7 +21,7 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     if(!bankDetails) {
         return next(new AppError('Bank details id is required.'))
     }
-    const userBank = await Bank.findOne({ _id : bankDetails , isActive : true });
+    const userBank = await Bank.findOne({ _id : bankDetails });
     if(!userBank) { 
         return next(new AppError('Invalid bank details. Bank account not found.' , 404))
     } 
@@ -141,7 +141,6 @@ const fetchWithdrawRequests = async (req , res , query) => {
         .limit(pageSize)
         .skip(pageSize * (page - 1))
         .sort({ createdAt : -1 });
-
         const pages = Math.ceil(docCount/pageSize);
         sendSuccessResponse(res , 200 , {
             docs , page , pages , docCount 
@@ -155,7 +154,7 @@ exports.getAllWithdrawRequests = catchAsync(async(req ,res ) => {
     await fetchWithdrawRequests(req , res , {})
 });
 exports.getSingleUserWithdrawRequests = catchAsync(async(req ,res ) => {
-    await fetchWithdrawRequests(req , res , { user : req.params._id })
+    await fetchWithdrawRequests(req , res , { user : req.params.id })
 }); 
 exports.getMyWithdrawRequests = catchAsync(async(req ,res ) => {
     await fetchWithdrawRequests(req , res , { user : req.user._id })

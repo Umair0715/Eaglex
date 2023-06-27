@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { addBankAccount, getAllbankAccounts , deleteBankAccount, updateBankAccount, getMyBankAccount, getSpecificUserBankAccount , getSingleBank } = require('../controllers/bankController');
+const { addBankAccount, getAllbankAccounts , deleteBankAccount, updateBankAccount, getMyBankAccount, getSpecificUserBankAccount , getSingleBank, changeBank } = require('../controllers/bankController');
 const { protect } = require('../middlewares/protect');
 const Admin = require('../models/adminModel');
 const User = require('../models/userModel');
@@ -17,6 +17,8 @@ router.route('/:id')
     .delete(protect(Admin) , deleteBankAccount)
     .put(protect(Admin) , updateBankAccount)
     .get(getSingleBank)
+
+router.put('/change/:id' , protect(User) , changeBank)
 
 
 module.exports= router;

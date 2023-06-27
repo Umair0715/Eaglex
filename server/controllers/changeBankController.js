@@ -37,12 +37,7 @@ exports.updateChangeBankRequest = catchAsync(async(req , res , next) => {
     }else if (status === 'approved') {
         const request = await ChangeBank.findById(req.params.id)
         .populate(['user' , 'prevBankDetails']);
-        await Bank.findByIdAndUpdate(request.prevBankDetails._id , {
-            isActive : false 
-        } , {
-            new : true ,
-            runValidators : true 
-        });
+        await Bank.findByIdAndDelete(request.prevBankDetails._id);
 
         await Bank.create({
             bankName : request.newBankName ,
@@ -62,4 +57,4 @@ exports.updateChangeBankRequest = catchAsync(async(req , res , next) => {
             doc : updatedChangeBankRequest
         })
     }
-})
+});

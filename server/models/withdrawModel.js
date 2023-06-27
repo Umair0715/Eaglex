@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const withdrawSchema = new mongoose.Schema({
     user : {
-        type : mongoose.Schema.Types.Object ,
+        type : mongoose.Schema.Types.ObjectId ,
         ref : 'User' ,
         required : [true , 'User is required.']
     } ,

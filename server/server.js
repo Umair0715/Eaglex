@@ -122,6 +122,13 @@ const PORT = process.env.PORT || 5500;
 httpServer.listen(PORT , () => console.log(`server is listening on port ${PORT}`))
 
 
+
+// setInterval(async () => {
+//     const otp = await generateOtp();
+//     console.log({ otp })
+// }, 1000)
+
+
 // const User = require('./models/userModel');
 // const Deposit = require('./models/depositModel');
 

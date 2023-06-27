@@ -62,24 +62,53 @@ exports.getAllUsers = catchAsync(async(req , res , next) => {
     if(req.query.pageSize && req.query.pageSize > 40){
         return next(new AppError('pageSize should be less than or equal to 25' , 400));
     }
-
-    const keyword = req.query.keyword ?
-    {
-        $or : [
+    const searchType = req.query.searchType;
+    let keyword ;
+    if(req.query.keyword) {
+        if(searchType === 'phone') {
+            keyword = { phone : {
+                $regex : req.query.keyword,
+                $options : 'i'
+            } }
+        }else if(searchType === 'name') {
+            keyword =  req.query.keyword.split(' ').length > 1
+            ?
             {
-                firstName : {
-                    $regex : req.query.keyword.split(' ')[0] || req.query.keyword,
-                    $options : 'i'
-                } 
-            } ,
-            {
-                lastName : {
-                    $regex : req.query.keyword.split(' ')[1] || req.query.keyword ,
-                    $options : 'i'
-                }
+                $and : [
+                    {
+                        firstName : {
+                            $regex : req.query.keyword.split(' ')[0] || req.query.keyword,
+                            $options : 'i'
+                        } 
+                    } ,
+                    {
+                        lastName : {
+                            $regex : req.query.keyword.split(' ')[1] || req.query.keyword ,
+                            $options : 'i'
+                        }
+                    }
+                ]
             }
-        ]
-    } : {} ;   
+            :
+            {
+                $or : [
+                    {
+                        firstName : {
+                            $regex : req.query.keyword.split(' ')[0] || req.query.keyword,
+                            $options : 'i'
+                        } 
+                    } ,
+                    {
+                        lastName : {
+                            $regex : req.query.keyword.split(' ')[1] || req.query.keyword ,
+                            $options : 'i'
+                        }
+                    } , 
+                    
+                ]
+            }  ;   
+        }
+    }
 
     const range = req.query.range;
 
@@ -370,13 +399,24 @@ exports.searchUser = catchAsync(async(req , res , next) => {
     });
 });
 
+const generateOtp = async () => {
+    var ID = require("nodejs-unique-numeric-id-generator")
+    const otp = ID.generate(new Date().toJSON());
+    const user = await User.findOne({ resetPasswordToken : otp , resetPasswordTokenExpire : { $gt : new Date() } })
+
+    if(otp.toString().length < 6 || user) {
+        return await generateOtp();
+    }
+    return otp;
+}
+
 exports.sendForgotPasswordOtp = catchAsync(async(req , res , next) => {
     const { phone } = req.body;
     const user = await User.findOne({ phone });
     if(!user) {
         return next(new AppError('This Phone number is not registered.' , 400))
     }
-    const otp = generateReferralCode();
+    const otp = await generateOtp()
     const message = `Thank you for choosing Eaglex Group.
     %0a%0aYour OTP for verification is ${otp}.
     %0aPlease enter this code to complete the verification process. Thank you.`;

@@ -37,3 +37,27 @@ exports.deleteBankAccount = handlerFactory.deleteOne(Bank);
 exports.updateBankAccount = handlerFactory.updateOne(Bank);
 exports.getSingleBank = handlerFactory.getOne(Bank);
 
+exports.changeBank = catchAsync(async(req , res , next) => {
+    const { id } = req.params;
+    const { newBankName , newBankAccountHolder , newBankAccountNo } = req.body;
+    if(!newBankName || !newBankAccountHolder || !newBankAccountNo) {
+        return next(new AppError('All fields are required.' , 400))
+    }
+    const prevBank = await Bank.findById(id);
+    if(!prevBank) {
+        return next(new AppError('Invalid request. Bank account not found.' , 400))
+    }
+    const updatedBank = await Bank.findByIdAndUpdate(prevBank._id , {
+        bankName : newBankName ,
+        accountHolder : newBankAccountHolder ,
+        accountNo : newBankAccountNo
+    } , { 
+        new : true ,
+        runValidators : true 
+    });
+    
+    sendSuccessResponse(res , 200 , {
+        message : 'Your bank details changed successfully.' ,
+        doc : updatedBank 
+    })
+})

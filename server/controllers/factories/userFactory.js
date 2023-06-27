@@ -21,7 +21,7 @@ exports.login = (Model , populateItems = '') => catchAsync(async(req , res , nex
     if(!doc || !(await doc.comparePassword(password))){
         return next(new AppError('Wrong phone or password'));
     }
-
+    
     const token = signToken({ _id : doc._id });
     sendCookie(res , token);
     doc.password = '';
