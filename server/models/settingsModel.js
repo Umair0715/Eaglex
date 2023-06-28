@@ -44,6 +44,10 @@ const settingsSchema = new mongoose.Schema({
     platformFee : {
         type : Number ,
         default : 2
+    } ,
+    extraCommission : { // in %
+        type : Number ,
+        default : 2 
     }
 } , { timestamps : true });
 

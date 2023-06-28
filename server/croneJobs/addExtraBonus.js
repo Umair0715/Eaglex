@@ -2,12 +2,14 @@ const User = require('../models/userModel');
 const Deposit = require('../models/depositModel');
 const createWalletHistory = require('../utils/CreateWalletHistory');
 const Wallet = require('../models/walletModel');
+const Setting = require('../models/settingsModel');
 
 
 const addExtraBonus = async () => {
     console.log('running');
 
     const users = await User.find({});
+    const settings = await Setting.findOne({});
 
     for (let user of users) {
         let levelOneMembers = await User.find({ referrer: user.referralCode })
@@ -34,7 +36,7 @@ const addExtraBonus = async () => {
         }
 
         if (milestoneReached) {
-            let bonusAmount = 100000 * 0.02;
+            let bonusAmount = (100000/100) * settings.extraCommission;
             // Add the bonus amount to the sponsor's wallet
             user.extraCommission += bonusAmount;
             const userWallet = await Wallet.findById(user.wallet);

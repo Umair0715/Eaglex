@@ -281,8 +281,9 @@ exports.getMyTeamDetails = catchAsync(async(req , res , next) => {
         levelOneCommissionAmount : levelOneCommission.toFixed(2) ,
         levelTwoCommissionAmount : levelTwoCommission.toFixed(2) ,
         levelThreeCommissionAmount : levelThreeCommission.toFixed(2) ,
-        totalTeamCommissionAmount : totalTeamCommission.toFixed(2) , 
-        teamMembers
+        totalTeamCommissionAmount : (totalTeamCommission + req.user.extraCommission).toFixed(2) , 
+        teamMembers ,
+        settings
     });
 });
 
