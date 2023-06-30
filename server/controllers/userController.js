@@ -52,7 +52,25 @@ exports.register = catchAsync(async(req , res , next) => {
 exports.login = userFactory.login(User , 'wallet');
 exports.getProfile = userFactory.profile(User , 'wallet');
 exports.logout = userFactory.logout(User);
-exports.updateProfile = userFactory.updateProfile(User , 'users');
+// exports.updateProfile = userFactory.updateProfile(User , 'users');
+exports.updateProfile = catchAsync(async(req , res , next) => {
+    const { image } = req.body;
+    let updatedDoc;
+    if(image) {
+        const { fileName } = uploadImage(image , 'users');
+        req.body.image = `/users/` + fileName;
+        updatedDoc = await User.findByIdAndUpdate(req.user._id , { image : req.body.image } , {
+            new : true , 
+            runValidators : true 
+        });
+    }
+    
+    sendSuccessResponse(res , 200 , {
+        message : 'Profile updated successfully.' ,
+        doc : updatedDoc
+    })
+});
+
 exports.updatePassword = userFactory.updatePassword(User);
 
 exports.getAllUsers = catchAsync(async(req , res , next) => {
@@ -300,15 +318,15 @@ exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
     const { id } = req.params;
     const user = await User.findById(id);
     const levelOneMembers = await User.find({ referrer : user.referralCode })
-    .select('firstName lastName phone isActive createdAt referrer referralCode')
+    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount')
     .exec();
     
     const levelTwoMembers = await User.find({ referrer : { $in: levelOneMembers.map(member => member.referralCode ) } })
-    .select('firstName lastName phone isActive createdAt referrer referralCode')
+    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount')
     .exec();
     
     const levelThreeMembers = await User.find({ referrer : { $in: levelTwoMembers.map(member => member.referralCode ) } })
-    .select('firstName lastName phone isActive createdAt referrer referralCode')
+    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount')
     .exec();
 
     // Calculate Level Members and their deposit

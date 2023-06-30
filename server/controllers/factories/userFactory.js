@@ -72,7 +72,6 @@ exports.updatePassword = Model => catchAsync(async(req , res , next) => {
 
 exports.updateProfile = (Model , imgDirectory = '') => catchAsync(async(req , res , next) => {
     const { image } = req.body;
-    console.log({ body : req.body })
     if(image) {
         const { fileName } = uploadImage(image , imgDirectory);
         req.body.image = `/${imgDirectory}/` + fileName;
