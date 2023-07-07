@@ -9,7 +9,7 @@ exports.protect = (Model) => catchAsync(async(req , res , next) => {
    }else{
       token = req.cookies.token;
    }
-   if(!token){
+   if(!token) {
       return next(new AppError("you're not logged in. please login to get access" , 401))
    }
    try {
@@ -18,6 +18,9 @@ exports.protect = (Model) => catchAsync(async(req , res , next) => {
       const user = await Model.findById(_id);
       if(!user){
          return next(new AppError('Access denied. UnAuthorized user.' , 401));
+      }
+      if(!user.isActive){
+         return next(new AppError('Your account is blocked. Contact support to unblock your account.', 401))
       }
       req.user = user;
       next();

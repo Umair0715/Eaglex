@@ -11,6 +11,9 @@ const Setting = require('../models/settingsModel');
 const uploadImage = require('../utils/uploadImage');
 const User = require('../models/userModel')
 const createWalletHistory = require('../utils/CreateWalletHistory');
+const Deposit = require('../models/depositModel');
+const Invest = require('../models/investModel');
+const mongoose = require('mongoose');
 
 
 exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
@@ -37,13 +40,13 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     // Set the time zone to Pakistan
     const moment = require('moment-timezone');
 
-    const currentTime = moment().tz('Asia/Karachi');
-    const startTime = moment().tz('Asia/Karachi').set({ hour: 10, minute: 0, second: 0, millisecond: 0 });
-    const endTime = moment().tz('Asia/Karachi').set({ hour: 17, minute: 0, second: 0, millisecond: 0 });
+    // const currentTime = moment().tz('Asia/Karachi');
+    // const startTime = moment().tz('Asia/Karachi').set({ hour: 10, minute: 0, second: 0, millisecond: 0 });
+    // const endTime = moment().tz('Asia/Karachi').set({ hour: 17, minute: 0, second: 0, millisecond: 0 });
 
-    if (currentTime.isBefore(startTime) || currentTime.isAfter(endTime)) {
-        return next(new AppError('Withdrawals can only be made between 10:00 AM to 5:00 PM Pakistan time.', 400));
-    }
+    // if (currentTime.isBefore(startTime) || currentTime.isAfter(endTime)) {
+    //     return next(new AppError('Withdrawals can only be made between 10:00 AM to 5:00 PM Pakistan time.', 400));
+    // }
 
     // Check if the user has already made a withdrawal request today
     const today = moment().startOf('day');
@@ -54,6 +57,30 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
 
     if (userWithdrawals.length > 0) {
         return next(new AppError('You can create only one withdrawal request per day. Please try again tomorrow.', 400));
+    }
+
+    // Check user create withdraw without invest
+    const deposit = await Deposit.findOne({ user : req.user._id })
+    .sort({ createdAt : -1 });
+    console.log({ deposit })
+    if(deposit) {
+        const invests = await Invest.find({ user : req.user._id , createdAt : { $gte : new Date(deposit.createdAt) }});
+        if(invests.length === 0){
+            return next(new AppError("Without making invest, You can't create withdraw request." , 400))
+        }
+        console.log({ invests });
+
+        const investedAmount = invests.reduce((acc , item) => acc + item.amount  , 0);
+        console.log({ investedAmount })
+        const depositedAmount = deposit.transferAmount;
+        console.log({ depositedAmount })
+        const amountToInvestForWithdraw = (depositedAmount/100) * settings.investPercentageForWithdraw;
+        console.log({ amountToInvestForWithdraw })
+        if(investedAmount < amountToInvestForWithdraw) {
+            const remainingInvestAmount = amountToInvestForWithdraw - investedAmount; 
+            console.log({ remainingInvestAmount })
+            return next(new AppError(`You have to invest ${remainingInvestAmount} rupees more to create withdraw request. ` , 400))
+        }
     }
 
     userWallet.totalBalance -= Number(amount);
@@ -74,7 +101,6 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
         username : req.user.firstName + ' ' + req.user.lastName ,
         receivedAmount : amount - withdrawFee
     });
-    console.log({ withdrawRequest : newRequest });
 
     createWalletHistory(amount , '-' , userWallet._id , req.user._id , 'withdrawn');
 
@@ -84,7 +110,7 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     })
 });
 
-const fetchWithdrawRequests = async (req , res , query) => {
+const fetchWithdrawRequests = async (req , res , query , findTotalWithdraw = false ) => {
     try {
         const pageSize = 10;
         const page = parseInt(req.query.page) || 1;
@@ -142,8 +168,28 @@ const fetchWithdrawRequests = async (req , res , query) => {
         .skip(pageSize * (page - 1))
         .sort({ createdAt : -1 });
         const pages = Math.ceil(docCount/pageSize);
+
+        let totalApprovedWithdrawAmount;
+        if(findTotalWithdraw) {
+            totalApprovedWithdrawAmount = await Withdraw.aggregate([
+                {
+                    $match: {
+                        user : mongoose.Types.ObjectId(query.user) , 
+                        status: 'completed',
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: '$withdrawAmount' },
+                    },
+                },
+            ]);
+        }
+
         sendSuccessResponse(res , 200 , {
-            docs , page , pages , docCount 
+            docs , page , pages , docCount , 
+            totalApprovedWithdrawAmount: findTotalWithdraw ? totalApprovedWithdrawAmount[0]?.totalAmount || 0 : 0,
         })
     } catch (error) {
         throw Error(error);
@@ -154,7 +200,7 @@ exports.getAllWithdrawRequests = catchAsync(async(req ,res ) => {
     await fetchWithdrawRequests(req , res , {})
 });
 exports.getSingleUserWithdrawRequests = catchAsync(async(req ,res ) => {
-    await fetchWithdrawRequests(req , res , { user : req.params.id })
+    await fetchWithdrawRequests(req , res , { user : req.params.id } , true )
 }); 
 exports.getMyWithdrawRequests = catchAsync(async(req ,res ) => {
     await fetchWithdrawRequests(req , res , { user : req.user._id })
@@ -170,11 +216,17 @@ exports.updateWithdrawRequest = catchAsync(async(req , res , next) => {
         const { fileName } = uploadImage(proof , 'withdraw');
         req.body.proof = '/withdraw/' + fileName ;
     }
+    const withdrawRequest = await Withdraw.findById(id);
+
+    if(withdrawRequest.status === req.body.status) {
+        return next(new AppError(`This request is already ${req.body.status}.` , 400))
+    }
+
     const updatedRequest = await Withdraw.findByIdAndUpdate(id , req.body , {
         new : true ,
         runValidators : true 
     }).populate('user');
-    
+
     if(req.body.status === 'declined') {
         const userWallet = await Wallet.findOne({ user : updatedRequest.user._id  });
         userWallet.totalBalance += updatedRequest.withdrawAmount;
@@ -185,6 +237,7 @@ exports.updateWithdrawRequest = catchAsync(async(req , res , next) => {
         adminWallet.totalBalance -= updatedRequest.withdrawFee;
         await adminWallet.save();
     }
+
     sendSuccessResponse(res , 200 , {
         message : "Withdraw request updated successfully." ,
         doc : updatedRequest

@@ -75,7 +75,7 @@ exports.updatePassword = userFactory.updatePassword(User);
 
 exports.getAllUsers = catchAsync(async(req , res , next) => {
     const page = Number(req.query.page) || 1 ;
-    const sort = req.query.sort || -1;
+    const sort = req.query.sort || 'createdAt';
     const pageSize = req.query.pageSize || 10;
     if(req.query.pageSize && req.query.pageSize > 40){
         return next(new AppError('pageSize should be less than or equal to 25' , 400));
@@ -146,6 +146,10 @@ exports.getAllUsers = catchAsync(async(req , res , next) => {
     } else if (range === 'year') {
         start.setFullYear(start.getFullYear() - 1);
         filter = { createdAt: { $gte: start, $lte: end } };
+    } else if(range === 'withDeposit') {
+        filter = { totalDepositAmount : { $gt : 0 }}
+    } else if (range === 'withoutDeposit') {
+        filter = { $or: [{ totalDepositAmount: 0 }, { totalDepositAmount: { $exists: false } }] };
     }
     
     const docCount = await User.countDocuments({...keyword , ...filter});
@@ -153,7 +157,7 @@ exports.getAllUsers = catchAsync(async(req , res , next) => {
     .populate('wallet')
     .skip(pageSize * (page - 1))
     .limit(pageSize)
-    .sort({ createdAt : sort })
+    .sort({ [sort] : -1 })
     const pages = Math.ceil(docCount/pageSize);
     sendSuccessResponse(res , 200 , {
         docs , page , pages , docCount 
@@ -163,7 +167,7 @@ exports.getAllUsers = catchAsync(async(req , res , next) => {
 exports.deleteUser = handlerFactory.deleteOne(User);
 exports.editUser = handlerFactory.updateOne(User);
 exports.getSingleUser = handlerFactory.getOne(User , 'wallet');
-exports.blockUser = userFactory.block(User);
+exports.blockUser = userFactory.blockUnblock(User);
 
 
 exports.getUserDetails = catchAsync(async (req , res , next) => {
@@ -318,15 +322,15 @@ exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
     const { id } = req.params;
     const user = await User.findById(id);
     const levelOneMembers = await User.find({ referrer : user.referralCode })
-    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount')
+    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount totalInvestAmount')
     .exec();
     
     const levelTwoMembers = await User.find({ referrer : { $in: levelOneMembers.map(member => member.referralCode ) } })
-    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount')
+    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount totalInvestAmount')
     .exec();
     
     const levelThreeMembers = await User.find({ referrer : { $in: levelTwoMembers.map(member => member.referralCode ) } })
-    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount')
+    .select('firstName lastName phone isActive createdAt referrer referralCode totalDepositAmount totalInvestAmount')
     .exec();
 
     // Calculate Level Members and their deposit
@@ -362,6 +366,7 @@ exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
     }
 
     const totalTeamMembers = levelOneMembers.length + levelTwoMembers.length + levelThreeMembers.length;
+    const totalTeamInvestment = teamMembers.reduce((acc , m) => m.totalInvestAmount + acc , 0)
 
     const levelOneMembersCount = levelOneMembers.length;
     const levelTwoMembersCount = levelTwoMembers.length;
@@ -380,7 +385,8 @@ exports.getSingleUserTeam = catchAsync(async(req , res , next) => {
         levelOneCommission : levelOneCommission.toFixed(2) ,
         levelTwoCommission : levelTwoCommission.toFixed(2) ,
         levelThreeCommission : levelThreeCommission.toFixed(2) ,
-        totalTeamCommission : totalTeamCommission.toFixed(2)
+        totalTeamCommission : totalTeamCommission.toFixed(2) ,
+        totalTeamInvestment
     }); 
 });
 
@@ -490,3 +496,15 @@ exports.resetPassword = catchAsync(async(req , res , next) => {
     });
 });
 
+exports.addUserDescription = catchAsync(async(req , res) => {
+    const { id } = req.params;
+    const doc = await User.findByIdAndUpdate(id , { description : req.body.description } , {
+        new : true , 
+        runValidators : true
+    }).populate('wallet');
+
+    sendSuccessResponse(res , 200 , {
+        message : 'User updated successfully.',
+        doc 
+    })
+})

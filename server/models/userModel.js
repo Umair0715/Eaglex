@@ -76,6 +76,10 @@ const userSchema = new mongoose.Schema({
     extraCommission : {
         type : Number ,
         default : 0
+    } , 
+    description : {
+        type : String ,
+        default : null 
     }
 
 } , { timestamps : true });

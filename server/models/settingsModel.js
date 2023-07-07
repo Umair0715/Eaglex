@@ -48,6 +48,10 @@ const settingsSchema = new mongoose.Schema({
     extraCommission : { // in %
         type : Number ,
         default : 2 
+    } , 
+    investPercentageForWithdraw : {
+        type : Number ,
+        default : 50 
     }
 } , { timestamps : true });
 

@@ -87,14 +87,15 @@ exports.updateProfile = (Model , imgDirectory = '') => catchAsync(async(req , re
     })
 });
 
-exports.block = (Model) => catchAsync(async(req , res , next) => {
+exports.blockUnblock = (Model) => catchAsync(async(req , res , next) => {
     const { id } = req.params;
-    const blockedUser = await Model.findByIdAndUpdate(id , { isActive : false } , {
+    const { isActive } = req.body;
+    const doc = await Model.findByIdAndUpdate(id , { isActive } , {
         new : true , 
         runValidators : true 
     });
     sendSuccessResponse(res , 200 , {
-        message : 'User Blocked successfully.' ,
-        doc : blockedUser
+        message : `User ${doc.isActive ? 'unblocked' : 'blocked'} successfully.` ,
+        doc 
     })
 })

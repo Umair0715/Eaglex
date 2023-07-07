@@ -47,7 +47,6 @@ exports.updatePassword = userFactory.updatePassword(Admin);
 exports.updateProfile = userFactory.updateProfile(Admin , 'admins');
 
 
-
 exports.getDashboardStats = catchAsync(async (req, res) => {
     const totalInvestedAmount = await Invest.aggregate([
         {
@@ -96,6 +95,10 @@ exports.getDashboardStats = catchAsync(async (req, res) => {
             },
         },
     ]);
+    const todayApprovedDepositsCount = await Deposit.countDocuments({
+        createdAt: { $gte: today },
+        status: 'approved',
+    });
 
      const totalApprovedDepositAmount = await Deposit.aggregate([
         {
@@ -110,6 +113,10 @@ exports.getDashboardStats = catchAsync(async (req, res) => {
             },
         },
     ]);
+    const totalApprovedDepositsCount = await Deposit.countDocuments({
+        status: 'approved',
+    });
+    
 
     const todayPendingDepositAmount = await Deposit.aggregate([
         {
@@ -125,6 +132,10 @@ exports.getDashboardStats = catchAsync(async (req, res) => {
             },
         },
     ]);
+    const todayPendingDepositsCount = await Deposit.countDocuments({
+        createdAt: { $gte: today },
+        status: 'pending',
+    });
 
     const todayTotalDepositAmount = await Deposit.aggregate([
         {
@@ -154,6 +165,10 @@ exports.getDashboardStats = catchAsync(async (req, res) => {
             },
         },
     ]);
+    const todayApprovedWithdrawCount = await Withdraw.countDocuments({
+        createdAt: { $gte: today },
+        status: 'completed',
+    });
 
     const totalApprovedWithdrawAmount = await Withdraw.aggregate([
         {
@@ -168,6 +183,9 @@ exports.getDashboardStats = catchAsync(async (req, res) => {
             },
         },
     ]);
+    const totalApprovedWithdrawCount = await Withdraw.countDocuments({
+        status: 'completed',
+    });
 
     const todayPendingWithdrawAmount = await Withdraw.aggregate([
         {
@@ -183,6 +201,11 @@ exports.getDashboardStats = catchAsync(async (req, res) => {
             },
         },
     ]);
+    const todayPendingWithdrawCount = await Withdraw.countDocuments({
+        createdAt: { $gte: today },
+        status: 'pending',
+    });
+
     const todayTotalWithdrawAmount = await Withdraw.aggregate([
         {
             $match: {
@@ -210,54 +233,11 @@ exports.getDashboardStats = catchAsync(async (req, res) => {
     todayPendingWithdrawAmount: todayPendingWithdrawAmount[0]?.todayAmount || 0,
     todayTotalWithdrawAmount: todayTotalWithdrawAmount[0]?.todayAmount || 0,
     todayTotalDepositAmount: todayTotalDepositAmount[0]?.todayAmount || 0,
+    todayPendingDepositsCount , 
+    todayApprovedDepositsCount ,
+    todayPendingWithdrawCount , 
+    todayApprovedWithdrawCount ,
+    totalApprovedDepositsCount , 
+    totalApprovedWithdrawCount
   });
 });
-
-
-
-
-
-
-
-
-// exports.getDashboardStats = catchAsync(async(req , res) => {
-//     const totalInvestedAmount = await Invest.aggregate([
-//         {
-//             $group: {
-//                 _id: null,
-//                 totalAmount: { $sum: '$amount' },
-//             },
-//         },
-//     ]);
-
-//     const today = new Date();
-//     today.setHours(0, 0, 0, 0);
-
-//     const todayInvestedAmount = await Invest.aggregate([
-//         {
-//             $match: {
-//                 createdAt: { $gte: today },
-//             },
-//         },
-//         {
-//             $group: {
-//                 _id: null,
-//                 todayAmount: { $sum: '$amount' },
-//             },
-//         },
-//     ]);
-
-//     const recentInvestors = await Invest.find()
-//         .sort({ createdAt: -1 })
-//         .limit(10)
-//         .populate(['user' , 'offer'])
-
-//     const usersCount = await User.countDocuments({});
-
-//     sendSuccessResponse(res , 200 , {
-//         totalInvestedAmount: totalInvestedAmount[0]?.totalAmount || 0,
-//         todayInvestedAmount: todayInvestedAmount[0]?.todayAmount || 0,
-//         recentInvestors ,
-//         totalUsers : usersCount
-//     });
-// });

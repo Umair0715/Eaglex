@@ -1,1 +1,34 @@
-admin panel me "add company ya companies" ka tab rukheingy waha sy wo company ki details add kry ga , then jb offer create kry ga tw select box me companies ki list show krwayengy jaha sy wo select krk offer create kry ga 
+/*
+======================
+	EAGLEX 
+======================
+*/
+
+********************
+    3 July 2023 
+====================
+
+1) Admin panel me Extra Commission show krwana h + team Total Investment show krwani h = [+]
+2) Decimal khatam krny hein ( Wallet Balance , withdraw , deposit ) [pending]
+3) User ko freeze/unfreeze krny ka option add krna h , agr user freezed h tw jb login kry tw usy popup show ho k uska account freezed h that's isk ilawa wo kuch na kr sky. = [+]
+
+4) Jb Withdraw declined hota h tw usk wallet me uska withdraw balance chla jata h , agr galti sy dubara declined kr dein tw dubara balance chla jata h. = [+]
+
+5) User details me ek note ka button add krna h jaha sy admin us user p koi note likh sky or wo note proper user details page p show hona chiye = [+]
+
+6) User management highest/lowest deposit amount ka filter add krna h = [+]
+7) Agr koi deposit krta h tw invest kiye bger withdraw na kr ske. iski percentage admin side p add krni h k admin decide kry ga k usk deposit ka kitny percent invest krna zrori h withdraw lgany sy phly. = [+]
+
+8) Admin Dashboard me requests count show krwana h = [+]
+	8.1) Today Pending Deposit Requests Count
+	8.2) Today Approved Deposit Requests Count
+	8.3) Today Pending Withdraw Requests Count
+	8.4) Today Approved Withdraw Requests Count
+
+9) Jb withdraw request create hoti h tw service charges or transfer amount separate calculate ho jati h , jb us request ko declined krty hein tw user k wallet me jo balance add hota h usme sy service charges minus ho jaty hein , tw declined hony pr usk wallet me actual amount jani chiye jitny per usny withdraw lgaya tha. = [+]
+
+10) Total Deposit ki trha Total Withdraw b show krwana h user ka = [+]
+
+11) Support chat khatam krni h , jesy hi user chat p jaye wha sy usy whatsapp pr redirect kr dena h = [+]
+
+12) Re-invest 
