@@ -52,6 +52,10 @@ const depositSchema = new mongoose.Schema({
     username : {
         type : String ,
         default : null 
+    } , 
+    bonusAmount : {
+        type : Number ,
+        default : 0 
     }
 }, { timestamps : true });
 

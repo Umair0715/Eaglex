@@ -7,43 +7,43 @@ const getLevelProfit = async (level) => {
     const settings = await Setting.findOne({});
     switch (level) {
         case 1:
-            return settings.levelOneProfit;
+            return settings.reInvestLevelOneProfit;
         case 2: 
-            return settings.levelTwoProfit;
+            return settings.reInvestLevelTwoProfit;
         case 3:
-            return settings.levelThreeProfit;
+            return settings.reInvestLevelThreeProfit;
         default:
             break;
     }
 }
 
-const sendBonusToReferrer = async (referrer, depositAmount, level, from) => {
+const sendBonusToReferrer = async (referrer, reInvestedAmount, level, from) => {
     if (level > 3) {
         return;
     }
   
     const levelProfit = await getLevelProfit(level);
     if(referrer && referrer.isActive){
-        const referrerProfit = (depositAmount / 100) * levelProfit;
+        const referrerProfit = (reInvestedAmount / 100) * levelProfit;
         const referrerWallet = await Wallet.findOne({ user: referrer._id });
         referrerWallet.totalBalance += referrerProfit;
         await referrerWallet.save();
         referrer.totalProfit += referrerProfit;
-        referrer.teamCommission += referrerProfit;
+        referrer.reInvestCommission += referrerProfit;
         referrer.save();
 
-        createWalletHistory(referrerProfit , '+' , referrerWallet._id , referrer._id , `Profit from level ${level} team member. `)
+        createWalletHistory(referrerProfit , '+' , referrerWallet._id , referrer._id , `Re-invest Profit from level ${level} team member. `)
     }
     if(!referrer.referrer){
         return;
     }
-    const nextReferrer = await getReferrer(referrer);
-    return sendBonusToReferrer(nextReferrer, depositAmount, level + 1, from);
+    const nextReferrer = await getReferrer(referrer)
+    return sendBonusToReferrer(nextReferrer, reInvestedAmount, level + 1, from);
 };
   
-const sendTeamBonus = async (user, depositAmount) => {
+const sendReInvestProfit = async (user, reInvestedAmount) => {
     const levelOneReferrer = await getReferrer(user);
-    await sendBonusToReferrer(levelOneReferrer, depositAmount, 1, user);
+    await sendBonusToReferrer(levelOneReferrer, reInvestedAmount, 1, user);
 }
 
-module.exports = sendTeamBonus;
+module.exports = sendReInvestProfit;

@@ -40,13 +40,13 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     // Set the time zone to Pakistan
     const moment = require('moment-timezone');
 
-    // const currentTime = moment().tz('Asia/Karachi');
-    // const startTime = moment().tz('Asia/Karachi').set({ hour: 10, minute: 0, second: 0, millisecond: 0 });
-    // const endTime = moment().tz('Asia/Karachi').set({ hour: 17, minute: 0, second: 0, millisecond: 0 });
+    const currentTime = moment().tz('Asia/Karachi');
+    const startTime = moment().tz('Asia/Karachi').set({ hour: 10, minute: 0, second: 0, millisecond: 0 });
+    const endTime = moment().tz('Asia/Karachi').set({ hour: 17, minute: 0, second: 0, millisecond: 0 });
 
-    // if (currentTime.isBefore(startTime) || currentTime.isAfter(endTime)) {
-    //     return next(new AppError('Withdrawals can only be made between 10:00 AM to 5:00 PM Pakistan time.', 400));
-    // }
+    if (currentTime.isBefore(startTime) || currentTime.isAfter(endTime)) {
+        return next(new AppError('Withdrawals can only be made between 10:00 AM to 5:00 PM Pakistan time.', 400));
+    }
 
     // Check if the user has already made a withdrawal request today
     const today = moment().startOf('day');
@@ -62,23 +62,18 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
     // Check user create withdraw without invest
     const deposit = await Deposit.findOne({ user : req.user._id })
     .sort({ createdAt : -1 });
-    console.log({ deposit })
     if(deposit) {
         const invests = await Invest.find({ user : req.user._id , createdAt : { $gte : new Date(deposit.createdAt) }});
         if(invests.length === 0){
             return next(new AppError("Without making invest, You can't create withdraw request." , 400))
         }
-        console.log({ invests });
 
         const investedAmount = invests.reduce((acc , item) => acc + item.amount  , 0);
-        console.log({ investedAmount })
         const depositedAmount = deposit.transferAmount;
-        console.log({ depositedAmount })
         const amountToInvestForWithdraw = (depositedAmount/100) * settings.investPercentageForWithdraw;
-        console.log({ amountToInvestForWithdraw })
+
         if(investedAmount < amountToInvestForWithdraw) {
             const remainingInvestAmount = amountToInvestForWithdraw - investedAmount; 
-            console.log({ remainingInvestAmount })
             return next(new AppError(`You have to invest ${remainingInvestAmount} rupees more to create withdraw request. ` , 400))
         }
     }
@@ -94,7 +89,12 @@ exports.createWithdrawRequest = catchAsync(async(req , res , next) => {
 
     const newRequest = await Withdraw.create({
         user : req.user._id ,
-        bankDetails ,
+        bankDetails : userBank._id ,
+        withdrawBank : {
+            bankName : userBank.bankName ,
+            accountHolder : userBank.accountHolder ,
+            accountNo : userBank.accountNo
+        } ,
         withdrawAmount : amount ,
         withdrawFee ,
         receivedAmount : amount ,
@@ -231,13 +231,12 @@ exports.updateWithdrawRequest = catchAsync(async(req , res , next) => {
         const userWallet = await Wallet.findOne({ user : updatedRequest.user._id  });
         userWallet.totalBalance += updatedRequest.withdrawAmount;
         await userWallet.save();
-         
-        const admin = await Admin.findOne({ isSuperAdmin : true });
-        const adminWallet = await AdminWallet.findOne({ admin : admin._id });
-        adminWallet.totalBalance -= updatedRequest.withdrawFee;
-        await adminWallet.save();
     }
-
+    if((req.body.status === 'pending' || req.body.status === 'completed') && withdrawRequest.status === 'declined'){
+        const userWallet = await Wallet.findOne({ user : updatedRequest.user._id  });
+        userWallet.totalBalance -= updatedRequest.withdrawAmount;
+        await userWallet.save();
+    }
     sendSuccessResponse(res , 200 , {
         message : "Withdraw request updated successfully." ,
         doc : updatedRequest
@@ -245,3 +244,4 @@ exports.updateWithdrawRequest = catchAsync(async(req , res , next) => {
 });
 
 exports.getSingleWithdrawRequest = handlerFactory.getOne(Withdraw , ['bankDetails' , 'user'])
+// exports.getSingleWithdrawRequest = handlerFactory.getOne(Withdraw , 'user')

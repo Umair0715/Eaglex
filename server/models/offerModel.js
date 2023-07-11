@@ -34,13 +34,21 @@ const offerSchema = new mongoose.Schema({
     status : {
         type : String ,
         default : null 
-    } 
+    } , 
+    description : {
+        type : String ,
+        default : '' 
+    } ,
+    investCount : {
+        type : Number ,
+        default : 0 
+    }
 } , { timestamps : true });
 
 const moment = require('moment-timezone')
 offerSchema.pre('save', function (next) {
     if (this.isNew) {
-      this.createdAt = moment().tz('Asia/Karachi');
+       this.createdAt = moment().tz('Asia/Karachi');
     }
     next();
 });

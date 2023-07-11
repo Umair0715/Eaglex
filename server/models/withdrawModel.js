@@ -11,6 +11,20 @@ const withdrawSchema = new mongoose.Schema({
         ref : 'Bank' ,
         required : [true , 'Bank details is required.']
     } ,
+    withdrawBank : {
+        bankName : {
+            type : String ,
+            required : [true , 'Bank name is required.']
+        } ,
+        accountHolder : {
+            type : String ,
+            required : [true , 'Account holder is required.']
+        } ,
+        accountNo : {
+            type : String ,
+            required : [true , 'account number is required.']
+        } ,
+    } ,
     withdrawAmount : {
         type : Number , 
         required : [true , 'Withdrawal amount is required.']
@@ -45,7 +59,7 @@ const withdrawSchema = new mongoose.Schema({
 const moment = require('moment-timezone')
 withdrawSchema.pre('save', function (next) {
     if (this.isNew) {
-      this.createdAt = moment().tz('Asia/Karachi');
+        this.createdAt = moment().tz('Asia/Karachi');
     }
     next();
 });

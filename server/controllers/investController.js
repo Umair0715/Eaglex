@@ -9,6 +9,7 @@ const Wallet = require('../models/walletModel');
 const moment = require('moment-timezone');
 const createWalletHistory = require('../utils/CreateWalletHistory');
 const User = require('../models/userModel');
+const sendReInvestProfit = require('../utils/sendReInvestProfit');
 
 exports.createInvest = catchAsync(async(req , res , next) => {
     let { amount } = req.body;
@@ -77,6 +78,34 @@ exports.createInvest = catchAsync(async(req , res , next) => {
     user.save();
 
     createWalletHistory(amount , '-' , userWallet._id , req.user._id , `Invested in ${offer.name} offer`)
+
+    const lastClaimedInvest = await Invest.findOne({ user : req.user._id , status : 'claimed' })
+    .sort({ createdAt : -1 });
+    
+    
+    if (user.referrer && lastClaimedInvest ) {
+        const lastClaimAmount = Number(lastClaimedInvest.totalProfitReturnInAmount);
+
+        const isReInvestedAfterLastClaim = await Invest.findOne({ 
+            createdAt :  { 
+                $gt : new Date(lastClaimedInvest.updatedAt) , 
+                $lt : new Date(newInvest.createdAt )
+            }
+        });
+
+        if(isReInvestedAfterLastClaim) {
+            return sendSuccessResponse(res , 200 , {
+                message : `You have successfully invested in offer ${offer.name}` ,
+                doc : newInvest 
+            });
+        }
+       
+        if(amount > lastClaimAmount) {
+            sendReInvestProfit(user , lastClaimAmount)
+        }else {
+            sendReInvestProfit(user , amount);
+        }
+    }
 
     sendSuccessResponse(res , 200 , {
         message : `You have successfully invested in offer ${offer.name}` ,

@@ -9,6 +9,7 @@ const Wallet = require('../models/walletModel');
 const User = require('../models/userModel');
 const createWalletHistory = require('../utils/CreateWalletHistory');
 const sendTeamBonus = require('../utils/sendTeamBonus');
+const Setting = require('../models/settingsModel');
 
 const imgDirectory = 'deposits';
 
@@ -20,11 +21,21 @@ exports.createDepositRequest = catchAsync(async(req , res , next) => {
     }
     const { fileName } = uploadImage(proof , imgDirectory);
     req.body.proof = `/${imgDirectory}/` + fileName;
+
+    const settings = await Setting.findOne();
+    
+    if (settings.depositBonus > 0) {
+        req.body.bonusAmount = (req.body.amount/100) * settings.depositBonus;
+    }
+
     const newRequest = await Deposit.create({
         ...req.body , 
         user : req.user._id ,
         username : req.user.firstName + ' ' + req.user.lastName
     });
+    
+    console.log({ newRequest });
+
     sendSuccessResponse(res , 201 , {
         message : 'Deposit request created successfully.' ,
         doc : newRequest
@@ -90,6 +101,10 @@ exports.updateDepositRequest = catchAsync(async(req , res ,next) => {
     if(!request) {
         return next(new AppError('Invalid id. Document not found.' , 404))
     }
+    if(request.status === req.body.status) {
+        return next(new AppError(`This request is already ${req.body.status}.` , 400))
+    }
+
     if(request.status === 'approved') {
         const userWallet = await Wallet.findOne({ user : request.user._id });
         userWallet.totalBalance -= Number(request.transferAmount);

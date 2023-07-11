@@ -4,12 +4,13 @@
 ======================
 */
 
+
+
 ********************
     3 July 2023 
 ====================
 
 1) Admin panel me Extra Commission show krwana h + team Total Investment show krwani h = [+]
-2) Decimal khatam krny hein ( Wallet Balance , withdraw , deposit ) [pending]
 3) User ko freeze/unfreeze krny ka option add krna h , agr user freezed h tw jb login kry tw usy popup show ho k uska account freezed h that's isk ilawa wo kuch na kr sky. = [+]
 
 4) Jb Withdraw declined hota h tw usk wallet me uska withdraw balance chla jata h , agr galti sy dubara declined kr dein tw dubara balance chla jata h. = [+]
@@ -31,4 +32,24 @@
 
 11) Support chat khatam krni h , jesy hi user chat p jaye wha sy usy whatsapp pr redirect kr dena h = [+]
 
-12) Re-invest 
+12) Deposit transfer issue = [+]
+13) Re-invest , user ka Re-invest profit bhi calculate krna h also show users re-invest commission in admin side , = [+]
+15) withdraw request me jo description h usko reason krna h or user k end sy bhi description ki jaga reason krna h or red color me show krna h = [+]
+
+
+17) jb user bank change krta h tw usk jo pichly withdraw records hoty hein unme bhi uska bank change ho jata h jo k nahi hona chiye. = [+]
+
+18) 100k ho ya 200k sbka profit ek hi din chla jaye  = [+]
+
+
+------------------------< 3 July End >-----------------------------
+
+********************
+    9 July 2023 
+====================
+1) Offer Lock Unlock Feature = [+]
+	1.1) agr offer active ni h tw usper locked likha hua ho  
+	1.2) or offer me note add krny ka option ho admin jb chahy us note ko change kr sky 
+	1.3) ek Or usme Ek chota sa note or add krna h jisy admin change kr sky urgency create krny k liye k ab tk kitny users us offer me invest kr chuky hein 
+
+2) 

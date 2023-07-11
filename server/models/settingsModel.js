@@ -52,6 +52,22 @@ const settingsSchema = new mongoose.Schema({
     investPercentageForWithdraw : {
         type : Number ,
         default : 50 
+    } , 
+    reInvestLevelOneProfit : {
+        type : Number ,
+        default : 2 
+    } ,
+    reInvestLevelTwoProfit : {
+        type : Number ,
+        default : 1.5 
+    } ,
+    reInvestLevelThreeProfit : {
+        type : Number ,
+        default : 1 
+    } , 
+    depositBonus : {
+        type : Number ,
+        default : 0 
     }
 } , { timestamps : true });
 

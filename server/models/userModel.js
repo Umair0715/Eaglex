@@ -80,6 +80,10 @@ const userSchema = new mongoose.Schema({
     description : {
         type : String ,
         default : null 
+    } , 
+    reInvestCommission : {
+        type : Number ,
+        default : 0
     }
 
 } , { timestamps : true });

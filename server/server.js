@@ -25,10 +25,10 @@ cron.schedule('30 4 * * *', addExtraBonus , {
 
 connectDB();
 
-// const allowedOrigins = ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com'];
+// const allowedOrigins = ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com' , 'https://www.eaglexgroup.com' , 'eaglexgroup.com' ];
 
 //dev
-const allowedOrigins = ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com' , 'http://localhost:3001' , 'http://localhost:3000' , "127.0.0.1:3001" , '127.0.0.1:3001'];  
+const allowedOrigins = ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com' , 'https://www.eaglexgroup.com' , 'eaglexgroup.com' , 'http://localhost:3001' , 'http://localhost:3000' , "127.0.0.1:3001" , '127.0.0.1:3001'];  
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -73,78 +73,84 @@ const httpServer = http.createServer(app);
 const io = new Server(httpServer , {
     cors : {
         // origin : ['https://eaglexgroup.com' , 'https://admin.eaglexgroup.com']
-        origin : ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com' , 'http://localhost:3001' , 'http://localhost:3000' , "127.0.0.1:3001" , '127.0.0.1:3001']
+        origin : ['https://admin.eaglexgroup.com' , 'https://eaglexgroup.com' , 'https://www.eaglexgroup.com' , 'eaglexgroup.com' , 'http://localhost:3001' , 'http://localhost:3000' , "127.0.0.1:3001" , '127.0.0.1:3001']
     }
 });
 
 
-let chats = [];
-
-const addToChats = (chat) => {
-    if(!chats.find(ch => ch._id === chat._id)){
-        chats.push(chat);
-    }
-}
-
-const removeFromChats = (chat) => {
-    chats = chats.filter(ch => ch._id !== chat._id );
-}
-
 io.on('connection' , (socket) => {
-
-    socket.on('join-chat' , (chat) => {
-        addToChats(chat);
-        socket.join(chat._id)
-    });
-    
-    socket.on('new-message' , (message) => {
-        socket.broadcast.to(message.chat._id).emit('new-message-recieved' , message);
-    });
-
-    socket.on('start-typing' , (roomId) => {
-        socket.broadcast.to(roomId).emit('start-typing')
-    });
-    
-    socket.on('stop-typing' , (roomId) => {
-        socket.broadcast.to(roomId).emit('stop-typing')
-    });
-
     socket.on('send-notification' , (message) => {
         socket.broadcast.emit('new-notification' , message);
     });
-
-    socket.on('leave-chat' , (chat) => {
-        removeFromChats(chat);
-    })
 });
+
 
 const PORT = process.env.PORT || 5500;
 httpServer.listen(PORT , () => console.log(`server is listening on port ${PORT}`))
 
 
+const updateWithdrawDetails = async () => {
+    const Withdraw = require('./models/withdrawModel');
+    const docs = await Withdraw.find({ status : 'completed'}).populate({
+        path : 'bankDetails' ,
+        select : '-__v'
+    });
+    if(docs.length > 0 ) {
+        for(let doc of docs) {
+            doc.withdrawBank.bankName = doc.bankDetails?.bankName || '//';
+            doc.withdrawBank.accountHolder = doc.bankDetails?.accountHolder || '//';
+            doc.withdrawBank.accountNo = doc.bankDetails?.accountNo || '//';
+            await doc.save();
+        }
+    }
+    console.log({ done : true , message : 'All Withdraws Updated'})
+}
+// updateWithdrawDetails();
 
-// setInterval(async () => {
-//     const otp = await generateOtp();
-//     console.log({ otp })
-// }, 1000)
 
 
-// const User = require('./models/userModel');
-// const Deposit = require('./models/depositModel');
 
-// const calcUserDeposit = async () => {
-//     try {
-//         const users = await User.find({});
-//         for (let user of users) {
-//             const deposits = await Deposit.find({ user : user._id , status : 'approved' });
-//             if(deposits.length > 0 ) {
-//                 const totalDepositAmount = deposits.reduce((acc , i) => acc + i.transferAmount , 0);
-//                 user.totalDepositAmount = Number(totalDepositAmount);
-//                 await user.save()
-//             }
-//         }
-//     } catch (error) {
-//         console.log({ calDepositError : error })
+
+
+
+
+//prev code for support chat 
+// let chats = [];
+
+// const addToChats = (chat) => {
+//     if(!chats.find(ch => ch._id === chat._id)){
+//         chats.push(chat);
 //     }
 // }
-// calcUserDeposit();
+
+// const removeFromChats = (chat) => {
+//     chats = chats.filter(ch => ch._id !== chat._id );
+// }
+
+// io.on('connection' , (socket) => {
+
+//     socket.on('join-chat' , (chat) => {
+//         addToChats(chat);
+//         socket.join(chat._id)
+//     });
+    
+//     socket.on('new-message' , (message) => {
+//         socket.broadcast.to(message.chat._id).emit('new-message-recieved' , message);
+//     });
+
+//     socket.on('start-typing' , (roomId) => {
+//         socket.broadcast.to(roomId).emit('start-typing')
+//     });
+    
+//     socket.on('stop-typing' , (roomId) => {
+//         socket.broadcast.to(roomId).emit('stop-typing')
+//     });
+
+//     socket.on('send-notification' , (message) => {
+//         socket.broadcast.emit('new-notification' , message);
+//     });
+
+//     socket.on('leave-chat' , (chat) => {
+//         removeFromChats(chat);
+//     })
+// });
